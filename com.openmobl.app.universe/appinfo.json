@@ -1,0 +1,65 @@
+{
+	"title": "Universe",
+	"type": "web",
+    "noWindow": true,
+	"main": "index.html",
+	"icon": "icon.png",
+    "smallicon": "smallicon.png",
+	"splashicon": "largeicon.png",
+	"splashBackground": "images/splash.png",
+	"id": "com.openmobl.app.universe",
+	"version": "1.0.2",
+	"vendor": "OpenMobl Systems",
+    "vendorurl": "http://www.openmobl.com/",
+	"removable": "true",
+	"keywords": ["Web", "Browser", "Atlas", "Internet"],
+    "theme": "palm-light",
+    "dockMode": true,
+	"touchstoneMode": "enabled",
+    "mimeTypes": [
+            { "urlPattern": "^https?:" },
+            { "mime": "text/html", "extension": "html" },
+            { "mime": "text/html", "extension": "htm" },
+            { "mime": "application/xhtml+xml", "extension": "xhtml" }
+        ],
+    
+	"universalSearch": {
+            "search": { 
+                    "displayName": "Search Universe",
+                    "url": "com.openmobl.app.universe",
+                    "launchParam": "search"
+                },
+            "action": { 
+                    "displayName": "Open URL",
+                    "url": "com.openmobl.app.universe",
+                    "launchParam": "url"
+                }
+        },
+
+    "copyright": "Copyright © 2010-2011 OpenMobl Systems. All Rights Reserved. Portions copyright Palm, Inc., or its subsidiaries.",
+    "support": {
+        "url": "http://www.openmobl.com/support",
+        "email": {
+            "address": "support@openmobl.com",
+            "subject": "Universe InApp Support Request"
+        },
+        "phone": "408-372-7256",
+        "resources": [
+            {
+                "type": "web",
+                "label": "Help Topics",
+                "url": "http://openmobl.mobi/help/"
+            },
+            {
+                "type": "web",
+                "label": "Facebook",
+                "url": "http://www.facebook.com/pages/Universe-Web-Browser/149809205071972"
+            },
+            {
+                "type": "web",
+                "label": "Twitter",
+                "url": "http://twitter.com/#!/openmobl"
+            }
+        ]
+    }
+}

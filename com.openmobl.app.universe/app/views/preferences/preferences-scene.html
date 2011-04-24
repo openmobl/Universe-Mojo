@@ -1,0 +1,221 @@
+<!-- 
+    The contents of this file are subject to the Mozilla Public License
+    Version 1.1 (the "License"); you may not use this file except in
+    compliance with the License. You may obtain a copy of the License at
+    http://www.mozilla.org/MPL/
+
+    Software distributed under the License is distributed on an "AS IS"
+    basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+    License for the specific language governing rights and limitations
+    under the License.
+
+    The Original Code is OpenMobl Systems code.
+
+    The Initial Developer of the Original Code is OpenMobl Systems.
+    Portions created by OpenMobl Systems are Copyright (C) 2010-2011
+    OpenMobl Systems. All Rights Reserved.
+
+    Contributor(s):
+        OpenMobl Systems
+        Donald C. Kirker <donald.kirker@openmobl.com>
+
+    Alternatively, the contents of this file may be used under the terms
+    of the GNU General Public License Version 2 license (the  "GPL"), in
+    which case the provisions of GPL License are applicable instead of
+    those above. If you wish to allow use of your version of this file only
+    under the terms of the GPL License and not to allow others to use
+    your version of this file under the MPL, indicate your decision by
+    deleting the provisions above and replace them with the notice and
+    other provisions required by the GPL License. If you do not delete
+    the provisions above, a recipient may use your version of this file
+    under either the MPL or the GPL License.
+-->
+<div id="container" class="form">
+    <div class="scene-fade-top" x-mojo-scroll-fade="top"></div>
+
+    <div class="palm-page-header">
+        <div class="palm-page-header-wrapper">
+            <div class="help-toggle" id="help-toggle" x-mojo-tap-highlight="persistent"></div>
+            <div class="icon mini-icon"></div>
+            <div class="title">Preferences &amp; Accounts</div>             
+        </div>
+    </div>
+
+    <div class="palm-group">
+        <div class="palm-group-title">General</div>
+        <div class="palm-list">
+            
+            <div class="palm-row first">
+                <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
+                    <div class="help-overlay" id="help-homePage"></div>
+                    <div class="title">
+                        <div class="label">Homepage</div>
+                        <div id="homePage" x-mojo-element="TextField"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="palm-row" x-mojo-tap-highlight="momentary">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-openOnStart"></div>
+                    <div id="openOnStart" x-mojo-element="ListSelector"></div>                                                   
+                </div>
+            </div>
+            
+            <div class="palm-row" x-mojo-tap-highlight="momentary">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-openOnNewCard"></div>
+                    <div id="openOnNewCard" x-mojo-element="ListSelector"></div>                                                   
+                </div>
+            </div>
+
+            <div class="palm-row" x-mojo-tap-highlight="momentary">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-searchProvider"></div>
+                    <div id="searchProvider" x-mojo-element="ListSelector"></div>                                                   
+                </div>
+            </div>
+
+            <div class="palm-row" x-mojo-tap-highlight="momentary">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-phoneDialer"></div>
+                    <div id="phoneDialer" x-mojo-element="ListSelector"></div>                                                   
+                </div>
+            </div>
+            
+            <div class="palm-row last" x-mojo-tap-highlight="momentary">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-twitterClient"></div>
+                    <div id="twitterClient" x-mojo-element="ListSelector"></div>                                                   
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!--
+    <div id="regDefaultBrowser" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Register Default Browser</div>
+    <div id="unregDefaultBrowser" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Unregister Default Browser</div>
+    --> 
+
+    <div class="palm-group">
+        <div class="palm-group-title">Privacy</div>
+        <div class="palm-list">
+            
+            <div class="palm-row first">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-privateBrowsing"></div>
+                    <div class="label left">Private Browsing</div>
+                    <div id="privateBrowsing" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-enableCache"></div>
+                    <div class="label left">Enable Cache</div>
+                    <div id="enableCache" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-blockPopUps"></div>
+                    <div class="label left">Block Pop Ups</div>
+                    <div id="blockPopUps" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-acceptCookies"></div>
+                    <div class="label left">Accept Cookies</div>
+                    <div id="acceptCookies" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row last">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-enableJS"></div>
+                    <div class="label left">Enable JavaScript</div>
+                    <div id="enableJS" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <!--<div class="palm-row">
+                <div class="palm-row-wrapper">
+                    <div class="label left">Silence Suppression</div>
+                    <div id="disableVAD" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row last">
+                <div class="palm-row-wrapper">
+                    <div class="label left">Silence Suppression</div>
+                    <div id="disableVAD" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>-->
+            
+        </div>
+    </div>
+
+    <div class="pref-disclaimer">Private browsing will temporarily disable the storing of history and card previews.</div>
+
+    <div id="clearHistory" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Clear History</div>
+    <div id="clearCookies" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Clear Cookies</div>
+    <div id="clearCache" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Clear Cache</div>
+
+    <div class="palm-group">
+        <div class="palm-group-title">Interface</div>
+        <div class="palm-list">
+            
+            <div class="palm-row first">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-hideIconsWhileBrowsing"></div>
+                    <div class="label left">Hide Icons</div>
+                    <div id="hideIconsWhileBrowsing" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-autoRotate"></div>
+                    <div class="label left">Auto-rotate</div>
+                    <div id="autoRotate" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row last">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-showBookmark"></div>
+                    <div class="label left">Show Bookmark</div>
+                    <div id="showBookmark" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="pref-disclaimer">Email address and password information is not stored on this device. It is sent securely to Google for authentication purposes.</div>
+    <div class="palm-group">
+        <div class="palm-group-title">Google Bookmarks</div>
+        <div class="palm-list">
+            
+            <div class="palm-row first">
+                <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
+                    <div class="help-overlay" id="help-googleEmail"></div>
+                    <div class="title">
+                        <div class="label">Email</div>
+                        <div id="googleEmail" x-mojo-element="TextField"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="palm-row last">
+                <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
+                    <div class="help-overlay" id="help-googlePassword"></div>
+                    <div class="title">
+                        <div class="label">Password</div>
+                        <div id="googlePassword" x-mojo-element="PasswordField"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div id="googleLogin" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Login</div>
+    <div id="googleLogout" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Logout</div>
+
+    <div class="scene-fade-bottom" x-mojo-scroll-fade="bottom"></div>
+</div>

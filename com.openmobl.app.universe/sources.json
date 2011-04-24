@@ -1,0 +1,102 @@
+[
+    {
+        "source": "app/assistants/addressbar.js"
+    },
+    {
+        "source": "app/assistants/smartmenu.js"
+    },
+    {
+        "source": "app/assistants/tab-manager.js"
+    },
+    {
+        "source": "app/assistants/app-assistant.js"
+    },
+    {
+        "source": "app/assistants/menu-assistant.js"
+    },
+    {
+        "source": "app/assistants/addbookmark-assistant.js"
+    },
+    {
+        "source": "app/assistants/pageerror-assistant.js"
+    },
+    
+    {
+        "source": "app/models/BookmarksDB.js"
+    },
+    {
+        "source": "app/models/BookmarksManager.js"
+    },
+    {
+        "source": "app/models/Cookie.js"
+    },
+    {
+        "source": "app/models/Google.js"
+    },
+    {
+        "source": "app/models/Help.js"
+    },
+    {
+        "source": "app/models/HistoryDB.js"
+    },
+    {
+        "source": "app/models/HistoryManager.js"
+    },
+    {
+        "source": "app/models/PrefsDB.js"
+    },
+    {
+        "source": "app/models/PrefsManager.js"
+    },
+    {
+        "source": "app/models/UrlUtil.js"
+    },
+    {
+        "source": "app/models/Utils.js"
+    },
+    
+    {
+        "scenes": "page",
+        "source": "app/assistants/page-assistant.js"
+    },
+    {
+        "scenes": "bookmarks",
+        "source": "app/assistants/bookmarks-assistant.js"
+    },
+    {
+        "scenes": "download",
+        "source": "app/assistants/download-assistant.js"
+    },
+    {
+        "scenes": "help-data",
+        "source": "app/assistants/help-data-assistant.js"
+    },
+    {
+        "scenes": "history",
+        "source": "app/assistants/history-assistant.js"
+    },
+    {
+        "scenes": "about",
+        "source": "app/assistants/about-assistant.js"
+    },
+    {
+        "scenes": "preferences",
+        "source": "app/assistants/preferences-assistant.js"
+    },
+    {
+        "scenes": "appsupportinfo",
+        "source": "app/assistants/appsupportinfo-assistant.js"
+    },
+    {
+        "scenes": "topsites",
+        "source": "app/assistants/topsites-assistant.js"
+    },
+    {
+        "scenes": "viewoptions",
+        "source": "app/assistants/viewoptions-assistant.js"
+    },
+    
+    {
+        "source": "javascripts/jquery.js"
+    }
+]
