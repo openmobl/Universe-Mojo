@@ -171,10 +171,19 @@ BookmarksAssistant.prototype.bookmarksUpdate = function(results)
     this.bookmarksList = [];
     
     for (i = 0; i < results.length; i++) {
-        if (this.bookmarksList[results[i].folder] == undefined) {
-            this.bookmarksList[results[i].folder] = [];
+        var folder = results[i].folder;
+        /* TODO: We need to actually force the bookmark to be updated instead of masking the folder name */
+        if (folder.length == 0) {
+            folder = BookmarksAssistant.Unfiled;
         }
-        this.bookmarksList[results[i].folder].push(results[i]);
+        
+        if (this.bookmarksList[folder] == undefined) {
+            this.bookmarksList[folder] = [];
+        }
+        var newResults = Object.clone(results[i]);
+        newResults.folder = folder;
+        
+        this.bookmarksList[folder].push(newResults);
     }
 
     this.folderList.each(function(item) {
@@ -195,12 +204,18 @@ BookmarksAssistant.prototype.foldersUpdate = function(results)
     this.folderList = [];
     
     for (i = 0; i < results.length; i++) {
-        if (!this.folderListContainsFolder(results[i].folder)) {
+        var folder = results[i].folder;
+        /* TODO: We need to actually force the bookmark to be updated instead of masking the folder name */
+        if (folder.length == 0) {
+            folder = BookmarksAssistant.Unfiled;
+        }
+        
+        if (!this.folderListContainsFolder(folder)) {
             var folderItem = {};
 
-            folderItem.displayName = results[i].folder;
+            folderItem.displayName = folder;
             folderItem.palmArrowOrientation = "palm-arrow-closed";
-            folderItem.folder = results[i].folder;
+            folderItem.folder = folder;
             folderItem.collapsedDisplay = "none";
             folderItem.innerHTML = "";
             

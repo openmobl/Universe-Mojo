@@ -8,7 +8,7 @@
 	"splashicon": "largeicon.png",
 	"splashBackground": "images/splash.png",
 	"id": "com.openmobl.app.universe",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"vendor": "OpenMobl Systems",
     "vendorurl": "http://www.openmobl.com/",
 	"removable": "true",

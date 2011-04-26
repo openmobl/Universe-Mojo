@@ -135,6 +135,10 @@ AddBookmarkAssistant.prototype.save = function()
     var url = this.urlField.mojo.getValue();
     var folder = this.folderField.mojo.getValue();
     
+    if (!folder || folder === "") {
+        folder = BookmarksAssistant.Unfiled;
+    }
+    
     /* TODO: Support description and category/folder */
     this.callbackFunc(this.id, title, url, "", folder);
     this.widget.mojo.close();

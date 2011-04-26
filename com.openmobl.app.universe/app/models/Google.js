@@ -195,7 +195,7 @@ Google.prototype.getXT = function(callback, fail)
                                 }
                             }).bind(this),
                 error: (function(jqXHR, textStatus, errorThrown) {
-                        Mojo.Log.info("getXT failed");
+                        Mojo.Log.error("getXT failed");
                         
                         if (fail)
                             fail(Google.LoginFailed);
@@ -337,7 +337,7 @@ Google.prototype.createOrUpdateBookmark = function(executeUrl, bookmark, callbac
                                 callback(data);
                         }).bind(this),
             error: (function(jqXHR, textStatus, errorThrown) {
-                    Mojo.Log.info("createOrUpdateBookmark failed -- status: " + textStatus + " err: " + errorThrown);
+                    Mojo.Log.error("createOrUpdateBookmark failed -- status: " + textStatus + " err: " + errorThrown);
                         
                     if (fail)
                         fail(Google.LoginFailed);

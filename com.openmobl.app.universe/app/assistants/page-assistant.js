@@ -489,14 +489,14 @@ PageAssistant.prototype.handlePrefsChanged = function(prefs)
         }
     }
     
-    if (Utils.toBool(results["privateBrowsing"]) != this.privateBrowsing) {
+    if (Utils.toBool(prefs["privateBrowsing"]) != this.privateBrowsing) {
         /* TODO: This will call clear cookies/cache for every card that is open, should we
            ony call the clear on the webView? */
         Universe.clearCookies();
         Universe.clearCache();
     }
     
-    this.privateBrowsing = Utils.toBool(results["privateBrowsing"]);
+    this.privateBrowsing = Utils.toBool(prefs["privateBrowsing"]);
     this.addressBar.showPrivateBrowsing(this.privateBrowsing);
     this.addressBar.restart(); // Refocus, re-listen and set cursor
 };
@@ -660,6 +660,9 @@ PageAssistant.prototype.showProgress = function(progress)
         this.progressBar.style.display = "none";
         this.showChromeIfNeeded(false);
     }
+    
+    // TODO: This is sort of a hack. It probably needs to be removed.
+    this.isEditing = false;
 };
 
 PageAssistant.prototype.launchCard = function(params)
@@ -891,8 +894,32 @@ PageAssistant.prototype.mimeNotSupported = function(event) // url, mimeType
         }
     } else if (url.toLowerCase().indexOf("about:") === 0) {
         this.openURL(url);
+    } else if (url.match("^http://((www\\.)?google\\.(com|[a-z]{2}|com?\\.[a-z]{2})/maps(/m)?|maps\\.google\\.(com|[a-z]{2}|com?\\.[a-z]{2})(/maps(/m)?)?)(/)?(\\?.*)?$") ||
+        url.match("^[^:]+://www.youtube.com/watch\\?v=") ||
+        url.match("^http://developer.palm.com/appredirect/?")) {
+            Utils.launchDefaultHandler(url);
     } else if (url.toLowerCase().indexOf("http") === 0) {
+        // So, the get Resource Info service call is protected... :( We explicitly check for URL redirects above...
         this.downloadFile(event);
+        
+        /*var resSuccess = function(resp) {
+        Mojo.Log.error("SUCCESS: " + Object.toJSON(resp) );
+        
+                if (resp.returnValue) {
+                    if (resp.appIdByExtension === Mojo.appInfo.id) {
+                        this.downloadFile(event);
+                    } else { // TODO: Should streaming be a special case?
+                        Utils.launchDefaultHandler(url, event.mimeType);
+                    }
+                }
+            };
+        
+        var resFailure = function(resp) {
+        Mojo.Log.error("FAIL: " + Object.toJSON(resp) );
+                this.downloadFile(event);
+            };
+        
+        Utils.getResourceInfo(url, event.mimeType, resSuccess.bind(this), resFailure.bind(this));*/
     } else { //if (url.toLowerCase().indexOf("mailto:") != -1) {
         Utils.launchDefaultHandler(url);
     }
