@@ -121,6 +121,11 @@ PreferencesAssistant.prototype.setup = function()
         this.controller.listen("clearCookies", Mojo.Event.tap, this.clearCookiesHandler);
         this.controller.listen("clearCache", Mojo.Event.tap, this.clearCacheHandler);
         
+        /* Google Bookmarks is not supported on webOS versions other than 2.0.1 and 2.1 */
+        /*if (Mojo.Environment.DeviceInfo.platformVersionMajor < 2) {
+            this.controller.get("googleContainer").style.display = "none";
+        }*/
+        
         this.setupGoogle();
     } catch (e) {
         Mojo.Log.info("E: " + e);
@@ -348,9 +353,18 @@ PreferencesAssistant.prototype.googleLogin = function()
         (function(error, params) {
                 Mojo.Log.info("Login failed: " + error + " results: " + Object.toJSON(params));
                 
+                var errorStr = $L("We could not log you into your Google Bookmarks. Please check your email address and password and try again.");
+                
+                if (error) {
+                    errorStr += "\n\n(" + $L("Error: ") + error + ")";
+                }
+                if (params) {
+                    errorStr += "\n[" + $L("Params: ") + Object.toJSON(params) + "]";
+                }
+                
                 this.controller.showAlertDialog({
                         title: $L("Login Failed"),
-                        message: $L("We could not log you into your Google Bookmarks. Please check your email address and password and try again."),
+                        message: errorStr,
                         choices:[
                             {label:$L("OK"), value:"ok"}   
                         ]

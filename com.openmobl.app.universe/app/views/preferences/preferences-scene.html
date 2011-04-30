@@ -188,34 +188,36 @@
         </div>
     </div>
 
-    <div class="pref-disclaimer">Email address and password information is not stored on this device. It is sent securely to Google for authentication purposes.</div>
-    <div class="palm-group">
-        <div class="palm-group-title">Google Bookmarks</div>
-        <div class="palm-list">
-            
-            <div class="palm-row first">
-                <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
-                    <div class="help-overlay" id="help-googleEmail"></div>
-                    <div class="title">
-                        <div class="label">Email</div>
-                        <div id="googleEmail" x-mojo-element="TextField"></div>
+    <div id="googleContainer">
+        <div class="pref-disclaimer">Email address and password information is not stored on this device. It is sent securely to Google for authentication purposes.</div>
+        <div class="palm-group">
+            <div class="palm-group-title">Google Bookmarks</div>
+            <div class="palm-list">
+                
+                <div class="palm-row first">
+                    <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
+                        <div class="help-overlay" id="help-googleEmail"></div>
+                        <div class="title">
+                            <div class="label">Email</div>
+                            <div id="googleEmail" x-mojo-element="TextField"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="palm-row last">
-                <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
-                    <div class="help-overlay" id="help-googlePassword"></div>
-                    <div class="title">
-                        <div class="label">Password</div>
-                        <div id="googlePassword" x-mojo-element="PasswordField"></div>
+                <div class="palm-row last">
+                    <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
+                        <div class="help-overlay" id="help-googlePassword"></div>
+                        <div class="title">
+                            <div class="label">Password</div>
+                            <div id="googlePassword" x-mojo-element="PasswordField"></div>
+                        </div>
                     </div>
                 </div>
+                
             </div>
-            
         </div>
+        <div id="googleLogin" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Login</div>
+        <div id="googleLogout" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Logout</div>
     </div>
-    <div id="googleLogin" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Login</div>
-    <div id="googleLogout" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Logout</div>
 
     <div class="scene-fade-bottom" x-mojo-scroll-fade="bottom"></div>
 </div>

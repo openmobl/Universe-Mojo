@@ -41,7 +41,8 @@ var UrlUtil = {
     },
     
     getCookie: function(cookie, name) {
-        var results = cookie.match("(^|;|,) ?" + name + "=([^;]*)(;|$)");
+        var reg = new RegExp("(^|;|,) ?" + name + "=([^;]*)(;|$)");
+        var results = cookie.match(reg);
 
         if (results)
             return (unescape(results[2]));

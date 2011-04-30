@@ -139,9 +139,16 @@ AddBookmarkAssistant.prototype.save = function()
         folder = BookmarksAssistant.Unfiled;
     }
     
-    /* TODO: Support description and category/folder */
-    this.callbackFunc(this.id, title, url, "", folder);
-    this.widget.mojo.close();
+    if (!title || title === "" ||
+        !url || url === "") {
+        var window = Mojo.Controller.getAppController().getActiveStageController().activeScene().window;
+        
+        Mojo.Controller.errorDialog($L("A Title and URL is required to save this bookmark."), window);
+    } else {
+        /* TODO: Support description and category/folder */
+        this.callbackFunc(this.id, title, url, "", folder);
+        this.widget.mojo.close();
+    }
 };
 
 AddBookmarkAssistant.prototype.cancel = function()

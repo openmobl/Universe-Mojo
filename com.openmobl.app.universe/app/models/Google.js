@@ -31,6 +31,12 @@
     under either the MPL or the GPL License.
  */
  
+ /*
+   TODO: We need to create a hook so that when a bookmark update fails, we can
+         re-prompt for login and try again. This needs to happen from the UI
+         layer.
+  */
+ 
 function Google(shouldOperate)
 {
     this.shouldOperate = shouldOperate;
@@ -51,6 +57,7 @@ Google.LoginFailed = "login-fail";
 Google.UnexpectedStatus = "unexpected-status";
 Google.UnfoundCookie = "unfound-cookie";
 Google.InvalidResponse = "invalid-response";
+Google.ReLogin = "Please Re Login.";
 
 Google.prototype.login = function(username, password, success, fail)
 {
@@ -121,7 +128,8 @@ Google.prototype.finishLogin = function(username, password, callback, fail)
                                     var hsid = UrlUtil.getCookie(cookie, "HSID");
                                     var ssid = UrlUtil.getCookie(cookie, "SSID");
                                     //var gausr = UrlUtil.getCookie(cookie, "GAUSR");
-                                    if (sid && lsid && hsid && ssid/*&& gausr*/) {
+                                    
+                                    if (sid || lsid || hsid || ssid/*&& gausr*/) {
                                         this.sid = sid;
                                         this.lsid = lsid;
                                         this.hsid = hsid;
@@ -160,6 +168,23 @@ Google.prototype.testLogin = function(callback, fail)
         });
 };
 
+Google.prototype.buildHeader = function()
+{
+    var header = "";
+    
+    if (this.sid) {
+        header += "SID=" + this.sid + "; ";
+    }
+    if (this.hsid) {
+        header += "HSID=" + this.hsid + "; ";
+    }
+    if (this.ssid) {
+        header += "SSID=" + this.ssid + "; ";
+    }
+    
+    return header;
+};
+
 Google.prototype.getXT = function(callback, fail)
 {
     Mojo.Log.info("Google#getXT");
@@ -176,22 +201,34 @@ Google.prototype.getXT = function(callback, fail)
                 dataType: "text",
                 cache: false,
                 beforeSend: (function(jqXHR, settings) {
-                                var header = "SID=" + this.sid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";"; //"GALX=" + this.galx + "; SID=" + this.sid + "; LSID=" + this.lsid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";";
-                                jqXHR.setRequestHeader("Cookie", header);
+                                //var header = "SID=" + this.sid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";"; //"GALX=" + this.galx + "; SID=" + this.sid + "; LSID=" + this.lsid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";";
+                                //jqXHR.setRequestHeader("Cookie", header);
+                                var header = this.buildHeader();
+                                if (header != "") {
+                                    jqXHR.setRequestHeader("Cookie", header);
+                                }
                             }).bind(this),
                 success: (function(data, textStatus, jqXHR) {
-                                var xt = data.match(/xt[\s+]=[\s+]'(\S+)'/)[1];
+                                var xtCookie = data.match(/xt[\s+]=[\s+]'(\S+)'/);
                                 
-                                if (xt) {
-                                    Mojo.Log.info("Got XT");
+                                if (xtCookie) {
+                                    var xt = xtCookie[1];
                                     
-                                    this.xt = xt;
-                                    
-                                    if (callback)
-                                        callback();
+                                    if (xt) {
+                                        Mojo.Log.info("Got XT");
+                                        
+                                        this.xt = xt;
+                                        
+                                        if (callback)
+                                            callback();
+                                    } else {
+                                        if (fail)
+                                            fail(Google.InvalidResponse);
+                                    }
                                 } else {
+                                    /* TODO: Re-login */
                                     if (fail)
-                                        fail(Google.InvalidResponse);
+                                            fail(Google.ReLogin);
                                 }
                             }).bind(this),
                 error: (function(jqXHR, textStatus, errorThrown) {
@@ -325,12 +362,16 @@ Google.prototype.createOrUpdateBookmark = function(executeUrl, bookmark, callbac
             url: executeUrl,
             type: "POST",
             beforeSend: (function(jqXHR, settings) {
-                            var header = "SID=" + this.sid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";"; //"GALX=" + this.galx + "; SID=" + this.sid + "; LSID=" + this.lsid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";";
-                            jqXHR.setRequestHeader("Cookie", header);
+                            //var header = "SID=" + this.sid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";"; //"GALX=" + this.galx + "; SID=" + this.sid + "; LSID=" + this.lsid + "; HSID=" + this.hsid + "; SSID=" + this.ssid + ";";
+                            //jqXHR.setRequestHeader("Cookie", header);
+                            var header = this.buildHeader();
+                            if (header != "") {
+                                jqXHR.setRequestHeader("Cookie", header);
+                            }
                         }).bind(this),
             data: {td: json},
             dataType: "json",
-            dataFilter: function(data, type){return data.replace(")]}'","")}, /* Google seems to return some garbage. We want to clean it up... */
+            dataFilter: function(data, type){ return data.replace(")]}'",""); }, /* Google seems to return some garbage. We want to clean it up... */
             success: (function(data, textStatus, jqXHR) {
                             Mojo.Log.info("createOrUpdateBookmark succeeded");
                             if (callback)
