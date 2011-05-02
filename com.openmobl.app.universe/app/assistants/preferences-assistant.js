@@ -320,11 +320,22 @@ PreferencesAssistant.prototype.saveLoginData = function(sid, lsid, hsid, ssid, g
     prefs.set("googleLSID", Mojo.Model.encrypt(nduid, lsid));
     prefs.set("googleHSID", Mojo.Model.encrypt(nduid, hsid));
     prefs.set("googleSSID", Mojo.Model.encrypt(nduid, ssid));
+    
+    this.google.getXT(this.googleFinalSave.bind(this, nduid), function(){});
+};
+
+PreferencesAssistant.prototype.googleFinalSave = function(nduid)
+{
+    var data = this.google.getLoggedIn();
+    
+    var prefs = Universe.getPrefsManager();
+    prefs.set("googleXT", Mojo.Model.encrypt(nduid, data.xt));
 };
 
 PreferencesAssistant.prototype.googleLogin = function()
 {
-    var google = new Google();
+    var google = Universe.getBookmarksManager().getGoogle(); //new Google();
+    this.google = google;
     
     var email = this.controller.get("googleEmail").mojo.getValue();
     var password = this.controller.get("googlePassword").mojo.getValue();
@@ -381,6 +392,7 @@ PreferencesAssistant.prototype.googleLogout = function()
     prefs.set("googleLSID", "0000");
     prefs.set("googleHSID", "0000");
     prefs.set("googleSSID", "0000");
+    prefs.set("googleXT", "0000");
 };
 PreferencesAssistant.prototype.setupGoogle = function()
 {

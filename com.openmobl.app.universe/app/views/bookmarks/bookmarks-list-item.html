@@ -30,14 +30,16 @@
     the provisions above, a recipient may use your version of this file
     under either the MPL or the GPL License.
 -->
-<div class="palm-row multi-line" x-openmobl-browser-url="#{url}" x-openmobl-browser-id="#{id}" x-openmobl-browser-title="#{title}" x-openmobl-browser-folder="#{folder}" x-mojo-tap-highlight="momentary">
+
+<div class="palm-row #{lineHeight}" x-mojo-tap-highlight="momentary">
     <div class="palm-row-wrapper bookmark-item">
-        <!--<div class="history-icon"></div>-->
-        <div class="bookmark-edit" x-openmobl-browser-action="edit"></div>
-        <div class="bookmark-text-container">
+        <div class="bookmark-#{class}-icon"></div>
+        <div class="bookmark-edit" id="edit" style="display: #{markDisplay};"></div>
+        <div class="bookmark-text-container" style="display: #{markDisplay};">
             <div class="bookmark-result title">#{title}</div>
             <div class="bookmark-result url">#{url}</div>
         </div>
+        <div class="bookmark-folder-text" style="display: #{folderDisplay};">#{folder}</div>
     </div>
 </div>
                                                                                                                     

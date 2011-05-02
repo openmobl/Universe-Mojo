@@ -35,7 +35,7 @@ AddBookmarkAssistant.addBookmark = $L("Add Bookmark");
 AddBookmarkAssistant.updateBookmark = $L("Update Bookmark");
 AddBookmarkAssistant.addToLauncher = $L("Add To Launcher");
 
-function AddBookmarkAssistant(sceneAssistant, id, title, url, folder, callbackFunc, canDelete, showFolder)
+function AddBookmarkAssistant(sceneAssistant, id, title, url, folder, callbackFunc, showFolder)
 {
 	this.sceneAssistant = sceneAssistant;
 	this.callbackFunc = callbackFunc;
@@ -43,7 +43,6 @@ function AddBookmarkAssistant(sceneAssistant, id, title, url, folder, callbackFu
     this.url = url;
     this.id = id;
     this.folder = folder;
-    this.canDelete = canDelete;
     this.showFolder = showFolder;
 
     this.titleModel = {
@@ -91,7 +90,6 @@ AddBookmarkAssistant.prototype.setup = function(widget)
     
     this.saveHandler = this.save.bindAsEventListener(this);
     this.cancelHandler = this.cancel.bindAsEventListener(this);
-    this.deleteHandler = this.deleteItem.bindAsEventListener(this);
     
     this.titleField = this.sceneAssistant.controller.get("bookmark-title");
     this.urlField = this.sceneAssistant.controller.get("bookmark-url");
@@ -107,13 +105,7 @@ AddBookmarkAssistant.prototype.setup = function(widget)
     
     this.sceneAssistant.controller.listen("update", Mojo.Event.tap, this.saveHandler);
     this.sceneAssistant.controller.listen("cancel", Mojo.Event.tap, this.cancelHandler);
-    this.sceneAssistant.controller.listen("delete", Mojo.Event.tap, this.deleteHandler);
-    
-    if (this.canDelete) {
-        this.sceneAssistant.controller.get("delete").style.display = "block";
-    } else {
-        this.sceneAssistant.controller.get("delete").style.display = "none";
-    }
+
     
     if (this.showFolder) {
         this.sceneAssistant.controller.get("folder-group").style.display = "block";
@@ -126,7 +118,6 @@ AddBookmarkAssistant.prototype.cleanup = function(widget)
 {
     this.sceneAssistant.controller.stopListening("update", Mojo.Event.tap, this.saveHandler, false);
     this.sceneAssistant.controller.stopListening("cancel", Mojo.Event.tap, this.cancelHandler, false);
-    this.sceneAssistant.controller.stopListening("delete", Mojo.Event.tap, this.deleteHandler, false);
 };
 
 AddBookmarkAssistant.prototype.save = function()
@@ -135,7 +126,7 @@ AddBookmarkAssistant.prototype.save = function()
     var url = this.urlField.mojo.getValue();
     var folder = this.folderField.mojo.getValue();
     
-    if (!folder || folder === "") {
+    if (this.showFolder && (!folder || folder === "")) {
         folder = BookmarksAssistant.Unfiled;
     }
     
@@ -143,9 +134,9 @@ AddBookmarkAssistant.prototype.save = function()
         !url || url === "") {
         var window = Mojo.Controller.getAppController().getActiveStageController().activeScene().window;
         
-        Mojo.Controller.errorDialog($L("A Title and URL is required to save this bookmark."), window);
+        Mojo.Controller.errorDialog($L("A Title and URL are required to save this bookmark."), window);
     } else {
-        /* TODO: Support description and category/folder */
+        /* TODO: Support description */
         this.callbackFunc(this.id, title, url, "", folder);
         this.widget.mojo.close();
     }
@@ -153,16 +144,5 @@ AddBookmarkAssistant.prototype.save = function()
 
 AddBookmarkAssistant.prototype.cancel = function()
 {
-    this.widget.mojo.close();
-};
-
-AddBookmarkAssistant.prototype.deleteItem = function()
-{
-    var title = this.titleField.mojo.getValue();
-    var url = this.urlField.mojo.getValue();
-    var folder = this.folderField.mojo.getValue();
-    
-    /* TODO: Support description and category/folder */
-    this.callbackFunc(this.id, title, url, "", folder, true);
     this.widget.mojo.close();
 };

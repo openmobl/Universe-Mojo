@@ -269,11 +269,30 @@ BookmarksDB.prototype.remove = function(id, callback)
     Mojo.Log.info("BookmarksDB#remove");
     var sqlDelete = "DELETE FROM '" + BookmarksDB.tableName + "' WHERE (id=?)";
 
-    Mojo.Log.info("BookmarksDB#delete");
-
     this.db.transaction((function (transaction) {
         transaction.executeSql(sqlDelete,
             [id], 
+            function (transaction, resultSet) {
+                Mojo.Log.info("BookmarksDB#delete - deleted");
+                if (callback)
+                    callback();
+            },
+            function(transaction, error) {
+                this.errorHandler(transaction, error);
+                if (callback)
+                    callback(transaction, error);
+            });
+    }).bind(this));
+};
+
+BookmarksDB.prototype.removeFolder = function(folder, callback)
+{
+    Mojo.Log.info("BookmarksDB#remove");
+    var sqlDelete = "DELETE FROM '" + BookmarksDB.tableName + "' WHERE (folder=?)";
+
+    this.db.transaction((function (transaction) {
+        transaction.executeSql(sqlDelete,
+            [folder], 
             function (transaction, resultSet) {
                 Mojo.Log.info("BookmarksDB#delete - deleted");
                 if (callback)

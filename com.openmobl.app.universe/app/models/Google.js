@@ -129,7 +129,7 @@ Google.prototype.finishLogin = function(username, password, callback, fail)
                                     var ssid = UrlUtil.getCookie(cookie, "SSID");
                                     //var gausr = UrlUtil.getCookie(cookie, "GAUSR");
                                     
-                                    if (sid || lsid || hsid || ssid/*&& gausr*/) {
+                                    if (sid && lsid && hsid && ssid/*&& gausr*/) {//if (sid || lsid || hsid || ssid/*&& gausr*/) {
                                         this.sid = sid;
                                         this.lsid = lsid;
                                         this.hsid = hsid;
@@ -242,7 +242,7 @@ Google.prototype.getXT = function(callback, fail)
 };
 
 /* Set the cookie values from the database */
-Google.prototype.setLoggedIn = function(galx, sid, hsid, lsid, ssid, gausr)
+Google.prototype.setLoggedIn = function(galx, sid, hsid, lsid, ssid, xt)
 {
     Mojo.Log.info("Google#setLoggedin");
     
@@ -251,6 +251,7 @@ Google.prototype.setLoggedIn = function(galx, sid, hsid, lsid, ssid, gausr)
     this.hsid = hsid;
     this.lsid = lsid;
     this.ssid = ssid;
+    this.xt = undefined; //xt;
     //this.gausr = gausr;
     
     this.loggedIn = true;
@@ -262,7 +263,8 @@ Google.prototype.getLoggedIn = function()
             GALX: this.galx,
             SID: this.sid,
             LSID: this.lsid,
-            HSID: this.hsid
+            HSID: this.hsid,
+            XT: this.xt
         };
 };
 

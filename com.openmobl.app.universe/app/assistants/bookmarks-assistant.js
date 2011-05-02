@@ -33,6 +33,9 @@
  
 BookmarksAssistant.Unfiled = $L("Unfiled");
 
+BookmarksAssistant.folder = "folder";
+BookmarksAssistant.bookmarks = "bookmarks";
+
 function BookmarksAssistant(pageIdentifier)
 {
     this.appMenuAttr = { omitDefaultItems: true };
@@ -49,38 +52,25 @@ function BookmarksAssistant(pageIdentifier)
             ]
     };
     
-    this.listDividerHandler = this.listDivider.bind(this);
+    this.mode = BookmarksAssistant.folder;
+    this.currentFolder = "";
+    
     this.listTapHandler = this.listTap.bind(this);
     this.listDeleteHandler = this.listDelete.bind(this);
-    this.listHoldHandler = this.listHold.bind(this);
-    this.drawerTapHandler = this.drawerTap.bind(this);
     
     this.listRenderItemsHandler = this.listRenderItems.bind(this);
-    this.listRenderFoldersHandler = this.listRenderFolders.bind(this);
     
-    this.folderList = [
-        {
-            displayName: BookmarksAssistant.Unfiled,
-            palmArrowOrientation: "palm-arrow-closed",
-            folder: BookmarksAssistant.Unfiled,
-            collapsedDisplay: "none",
-            innerHTML: ""
-        },
-    ];
-    this.folderListAttr = {
-            itemTemplate: "bookmarks/bookmarks-list-container",
-			itemsCallback: this.listRenderFoldersHandler
-        };
-    this.folderListModel = {
-            items: []
-        };
-        
     this.bookmarksList = [];
-    this.bookmarksListAttr = {
+    this.folderList = [];
+    
+    this.combinedList = [
+        ];
+    this.combinedListAttr = {
+            swipeToDelete: true,
             itemTemplate: "bookmarks/bookmarks-list-item",
 			itemsCallback: this.listRenderItemsHandler
         };
-    this.bookmarksListModel = {
+    this.combinedListModel = {
             items: []
         };
 }
@@ -89,14 +79,11 @@ function BookmarksAssistant(pageIdentifier)
 BookmarksAssistant.prototype.setup = function()
 {
     this.setupMenus();
-    //this.setupDrawers();
     
-    this.controller.setupWidget("bookmarks-list-container", this.folderListAttr, this.folderListModel);
+    this.controller.setupWidget("bookmark-list", this.combinedListAttr, this.combinedListModel);
     
-    //this.controller.listen("bookmarks-list-container", Mojo.Event.listTap, this.listTapHandler, false);
-    //this.controller.listen("bookmarks-list-container", Mojo.Event.listDelete, this.listDeleteHandler, false);
-    //this.controller.listen("bookmarks-list-container", Mojo.Event.hold, this.listHoldHandler, false);
-    this.controller.listen("bookmarks-list-container", Mojo.Event.tap, this.drawerTapHandler, false);
+    this.controller.listen("bookmark-list", Mojo.Event.listTap, this.listTapHandler, false);
+    this.controller.listen("bookmark-list", Mojo.Event.listDelete, this.listDeleteHandler, false);
 };
 
 BookmarksAssistant.prototype.aboutToActivate = function(callback)
@@ -123,10 +110,10 @@ BookmarksAssistant.prototype.deactivate = function(event)
 
 BookmarksAssistant.prototype.cleanup = function(event)
 {
-    //this.controller.stopListening("bookmarks-list-container", Mojo.Event.listTap, this.listTapHandler, false);
-    //this.controller.stopListening("bookmarks-list-container", Mojo.Event.listDelete, this.listDeleteHandler, false);
+    this.controller.stopListening("bookmark-list", Mojo.Event.listTap, this.listTapHandler, false);
+    this.controller.stopListening("bookmark-list", Mojo.Event.listDelete, this.listDeleteHandler, false);
     //this.controller.stopListening("bookmarks-list-container", Mojo.Event.hold, this.listHoldHandler, false);
-    this.controller.stopListening("bookmarks-list-container", Mojo.Event.tap, this.drawerTapHandler, false);
+    //this.controller.stopListening("bookmarks-list-container", Mojo.Event.tap, this.drawerTapHandler, false);
 };
 
 BookmarksAssistant.prototype.addBookmark = function(id, title, url, desc, folder)
@@ -145,8 +132,8 @@ BookmarksAssistant.prototype.updateBookmark = function(id, title, url, desc, fol
         Universe.getBookmarksManager().removeBookmark(id, this.updateScene.bind(this));
     } else {
         Universe.getBookmarksManager().updateBookmark(id, url, title, desc, folder);
-        this.updateScene();
     }
+    this.updateScene();
 };
 
 BookmarksAssistant.prototype.folderListContainsFolder = function(folder)
@@ -180,18 +167,27 @@ BookmarksAssistant.prototype.bookmarksUpdate = function(results)
         if (this.bookmarksList[folder] == undefined) {
             this.bookmarksList[folder] = [];
         }
-        var newResults = Object.clone(results[i]);
+        var newResults = {};
+        
+        newResults.class = "bookmark";
+        newResults.lineHeight = "multi-line";
         newResults.folder = folder;
+        newResults.markDisplay = "block";
+        newResults.folderDisplay = "none";
+        newResults.title = results[i].title;
+        newResults.url = results[i].url;
+        newResults.id = results[i].id;
         
         this.bookmarksList[folder].push(newResults);
     }
-
-    this.folderList.each(function(item) {
-            item.innerHTML = Mojo.View.render({collection: this.bookmarksList[item.folder], template: "bookmarks/bookmarks-list-item"});
-            
-            this.controller.get("bookmarks-list-container").mojo.setLengthAndInvalidate(this.folderList.length);
-            this.controller.get("bookmarks-list-container").mojo.revealItem(0, false);
-        }.bind(this));
+        
+    if (this.mode === BookmarksAssistant.folder) {
+        this.controller.get("bookmark-list").mojo.setLengthAndInvalidate(this.folderList.length);
+    } else {
+        this.controller.get("bookmark-list").mojo.setLengthAndInvalidate(this.bookmarksList[this.currentFolder].length);
+    }
+    
+    this.controller.get("bookmark-list").mojo.revealItem(0, false);
 };
 
 BookmarksAssistant.prototype.foldersUpdate = function(results)
@@ -213,11 +209,14 @@ BookmarksAssistant.prototype.foldersUpdate = function(results)
         if (!this.folderListContainsFolder(folder)) {
             var folderItem = {};
 
-            folderItem.displayName = folder;
-            folderItem.palmArrowOrientation = "palm-arrow-closed";
+            folderItem.class = "folder";
+            folderItem.lineHeight = "";
             folderItem.folder = folder;
-            folderItem.collapsedDisplay = "none";
-            folderItem.innerHTML = "";
+            folderItem.markDisplay = "none";
+            folderItem.folderDisplay = "block";
+            folderItem.title = "";
+            folderItem.url = "";
+            folderItem.id = "";
             
             this.folderList.push(folderItem);
         }
@@ -225,12 +224,6 @@ BookmarksAssistant.prototype.foldersUpdate = function(results)
     
 	var bookmarksUpdateCallback = this.bookmarksUpdate.bind(this);
     Universe.getBookmarksManager().getBookmarks(bookmarksUpdateCallback);
-};
-
-
-BookmarksAssistant.prototype.setupDrawers = function()
-{
-    Mojo.Log.info("BookmarksAssistant#setupDrawers");
 };
 
 BookmarksAssistant.prototype.updateScene = function()
@@ -241,236 +234,98 @@ BookmarksAssistant.prototype.updateScene = function()
     Universe.getBookmarksManager().getBookmarks(foldersUpdateCallback);
 };
 
-BookmarksAssistant.prototype.listDivider = function(itemModel)
-{
-    Mojo.Log.info("BookmarksAssistant#listDivider");
-    
-    Mojo.Log.info("Lookup divider name for item: " + Object.toJSON(itemModel));
-    
-    var label = itemModel.folder;
-    
-    return label;
-};
-
-BookmarksAssistant.prototype.listRenderItems = function(arrayName, list, offset, count)
+BookmarksAssistant.prototype.listRenderItems = function(list, offset, count)
 {
     Mojo.Log.info("BookmarksAssistant#listRenderItems");
     
     try {
-        var visibleItems = this.bookmarksList[arrayName].slice(offset, offset + count);
+        var visibleItems = 0;
+        
+        if (this.mode === BookmarksAssistant.folder) {
+            visibleItems = this.folderList.slice(offset, offset + count);
+        } else {
+            visibleItems = this.bookmarksList[this.currentFolder].slice(offset, offset + count);
+        }
         
         list.mojo.noticeUpdatedItems(offset, visibleItems);
     } catch (e) {
-        Mojo.Log.info("List is not ready");
-    }
-};
-
-
-BookmarksAssistant.prototype.listRenderFolders = function(list, offset, count)
-{
-    Mojo.Log.info("BookmarksAssistant#listRenderFolders(" + offset + ", " + count + ")");
-    
-    try {
-        var visibleItems = this.folderList.slice(offset, offset + count);
-        
-        list.mojo.noticeUpdatedItems(offset, visibleItems);
-    } catch (e) {
-        Mojo.Log.info("List is not ready");
+        Mojo.Log.info("List is not ready (" + e + ")");
     }
 };
 
 BookmarksAssistant.prototype.listDelete = function(event)
 {
     Mojo.Log.info("BookmarksAssistant#listDelete(" + event.item.id + ")");
-        
-    Universe.getBookmarksManager().removeBookmark(event.item.id, this.updateScene.bind(this));
+    
+    if (this.mode === BookmarksAssistant.folder) {
+        Universe.getBookmarksManager().removeBookmarksInFolder(event.item.folder, this.updateScene.bind(this));
+    } else {
+        Universe.getBookmarksManager().removeBookmark(event.item.id, this.updateScene.bind(this));
+    }
 };
 
 BookmarksAssistant.prototype.listTap = function(event)
 {
     Mojo.Log.info("BookmarksAssistant#listTap");
     
-    /*if (event.item) {
-        var url = event.item.url;
-        
-        if (url && url.length > 0) {
-            this.controller.stageController.popScene({action: "loadURL", target: url});
-        }
-    }*/
-    var row = this.controller.get(event.target);
-    while (row !== undefined && row.hasAttribute &&
-        !row.hasAttribute("x-openmobl-browser-url")) {
-        row = row.up();
-    }
-	if (row === undefined) {
-        Mojo.Log.warn("Can't find row attribute");
-    } else if (!row.hasAttribute) {
-        Mojo.Log.warn("row.hasAttribute not defined!");
-    } else if (row.hasAttribute("x-openmobl-browser-url")) {
-        var url = row.readAttribute("x-openmobl-browser-url");
-        var id = row.readAttribute("x-openmobl-browser-id");
-        var title = row.readAttribute("x-openmobl-browser-title");
-        var folder = row.readAttribute("x-openmobl-browser-folder");
-        
-        if (url.length > 0) {
-            this.controller.stageController.popScene({action: "loadURL", target: url});
-        }
-    }
-};
-
-BookmarksAssistant.prototype.listHold = function(event)
-{
-    Mojo.Log.info("BookmarksAssistant#listHold");
-    
-    var row = this.controller.get(event.target);
-    while (row !== undefined && row.hasAttribute &&
-        !row.hasAttribute("x-openmobl-browser-url")) {
-        row = row.up();
-    }
-	if (row === undefined) {
-        Mojo.Log.warn("Can't find row attribute");
-    } else if (!row.hasAttribute) {
-        Mojo.Log.warn("row.hasAttribute not defined!");
-    } else if (row.hasAttribute("x-openmobl-browser-url")) {
-        var url = row.readAttribute("x-openmobl-browser-url");
-        var id = row.readAttribute("x-openmobl-browser-id");
-        var title = row.readAttribute("x-openmobl-browser-title");
-        var folder = row.readAttribute("x-openmobl-browser-folder");
-        
-        if (url.length > 0) {
+    if (event.item) {
+        if (this.controller.get(event.originalEvent.target).match("#edit")) {
+            var id = event.item.id;
+            var title = event.item.title;
+            var url = event.item.url;
+            var folder = event.item.folder;
+            
             event.preventDefault();
             event.stopPropagation();
             
             this.controller.showDialog({
                     template: "bookmarks/bookmarks-add-dialog",
-                    assistant: new AddBookmarkAssistant(this, id, title, url, folder, this.updateBookmark.bind(this), true, true),
+                    assistant: new AddBookmarkAssistant(this, id, title, url, folder, this.updateBookmark.bind(this), true),
                     mode: AddBookmarkAssistant.updateBookmark
                 });
-        }
-    }
-};
-
-/* From eMail application. Copyright (c) 2010 Palm, Inc. */
-BookmarksAssistant.prototype.setDrawerState = function(id, expand)
-{
-	var rowElement = this.controller.get(id);
-    var toggling;
-	
-	Mojo.Log.info("BookmarksAssistant#setDrawerState(): id=%s, expand=%s", id, expand);
-	
-	if (!rowElement || !rowElement.hasClassName("bookmark-category-container")) {
-		return;
-	}
-	
-	// Make sure it's visible -- it may have been hidden if user was filtering.
-	rowElement.style.display = "";
-	
-	// Find the arrow button, and determine current drawer state
-	var toggleButton = rowElement.querySelector("div.arrow-button");
-	var currentlyExpanded = toggleButton.hasClassName("palm-arrow-expanded");
-	
-	if (!currentlyExpanded && !toggleButton.hasClassName("palm-arrow-closed")) {
-		return;
-	}
-	
-	// If 'expand' is not specified, toggle the state.
-	// If the state is already correct, just return.
-	if (expand === undefined) {
-		expand = !currentlyExpanded;
-		toggling = true;
-	} else if(expand === currentlyExpanded) {
-		return;
-	}
-	
-	// get the container div.
-	var container = this.controller.get(id + "-container");
-	var maxHeight = container.offsetHeight;
-	
-	// Update classes on the button
-	if (expand) {
-		toggleButton.addClassName("palm-arrow-expanded");
-		toggleButton.removeClassName("palm-arrow-closed");
-		container.style.display = "";
-		maxHeight = container.offsetHeight;
-		container.style.height = "1px";
-
-		// See if the div should scroll up a little to show the contents
-        /*var elementTop = container.viewportOffset().top;
-        var scroller = Mojo.View.getScrollerForElement(container);
-        if (elementTop > viewPortMidway && scroller && toggling) {
-            //Using setTimeout to give the animation time enough to give the div enough height to scroll to
-            var scrollToPos = scroller.mojo.getScrollPosition().top - (elementTop - viewPortMidway);
-            setTimeout(function() {scroller.mojo.scrollTo(undefined, scrollToPos, true);}, 200);
-        }*/
-	} else {
-		container.style.height = maxHeight + "px";
-		toggleButton.addClassName("palm-arrow-closed");
-		toggleButton.removeClassName("palm-arrow-expanded");
-	}
-
-	// Animate height change on the container div.
-	Mojo.Log.info("setDrawerState: reverse:%s, from: 1, maxHeight:%d", !currentlyExpanded, maxHeight);
-	var options = {
-            reverse: !currentlyExpanded,
-            onComplete: this.animationComplete.bind(this, expand, rowElement.id, maxHeight, toggling),
-            curve: "over-easy",
-            from: 1,
-            to: maxHeight,
-            duration: 0.4
-        };
-	Mojo.Animation.animateStyle(container, "height", "bezier", options);
-};
-
-BookmarksAssistant.prototype.animationComplete = function(expand, accountId, listHeight, toggling, itemContainer, cancelled)
-{
-    if (!expand) {
-        itemContainer.style.display = "none";
-    }
-    itemContainer.style.height = "auto";
-};
-
-BookmarksAssistant.prototype.drawerTap = function(event)
-{
-    Mojo.Log.info("BookmarksAssistant#drawerTap");
-	if (event.target.hasAttribute("drawer")) {
-		this.setDrawerState(event.target.getAttribute("drawer"));
-		event.stopPropagation();
-	} else {
-        var row = this.controller.get(event.target);
-        while (row !== undefined &&
-            !row.hasAttribute("x-openmobl-browser-url") &&
-            !row.hasAttribute("x-openmobl-browser-action")) {
-            row = row.up();
-        }
-        if (row === undefined) {
-            Mojo.Log.warn("Can't find row attribute");
-        } else if (row.hasAttribute("x-openmobl-browser-action")) {
-            this.listHold(event);
-        } else if (row.hasAttribute("x-openmobl-browser-url")) {
-            var url = row.readAttribute("x-openmobl-browser-url");
-            var id = row.readAttribute("x-openmobl-browser-id");
-            var title = row.readAttribute("x-openmobl-browser-title");
-            var folder = row.readAttribute("x-openmobl-browser-folder");
+        } else {
+            var type = event.item.class;
             
-            if (url.length > 0) {
-                this.controller.stageController.popScene({action: "loadURL", target: url});
+            if (type === BookmarksAssistant.folder) {
+                this.currentFolder = event.item.folder;
+                this.mode = BookmarksAssistant.bookmark;
+                
+                this.controller.get("bookmark-list").mojo.setLengthAndInvalidate(this.bookmarksList[this.currentFolder].length);
+                this.controller.get("bookmark-list").mojo.revealItem(0, false);
+            } else {
+                var url = event.item.url;
+        
+                if (url && url.length > 0) {
+                    this.controller.stageController.popScene({action: "loadURL", target: url});
+                }
             }
         }
     }
 };
-
 
 BookmarksAssistant.prototype.handleCommand = function(event)
 {
     Mojo.Log.info("BookmarksAssistant#handleCommand");
     var handled = false;
     
-    if (event.type == Mojo.Event.command) {
+    if (event.type == Mojo.Event.back) {
+        if (this.mode === BookmarksAssistant.bookmark) {
+            this.mode = BookmarksAssistant.folder;
+            
+            this.controller.get("bookmark-list").mojo.setLengthAndInvalidate(this.folderList.length);
+            this.controller.get("bookmark-list").mojo.revealItem(0, false);
+            
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    } else if (event.type == Mojo.Event.command) {
         switch (event.command) {
             case "do-sceneNewBookmark":
                 this.controller.showDialog({
                         template: "bookmarks/bookmarks-add-dialog",
-                        assistant: new AddBookmarkAssistant(this, -1, "", "", $L("Unfiled"), this.addBookmark.bind(this), false, true),
+                        assistant: new AddBookmarkAssistant(this, -1, "", "",
+                                        this.mode === BookmarksAssistant.bookmark ? this.currentFolder : $L("Unfiled"),
+                                        this.addBookmark.bind(this), true),
                         mode: AddBookmarkAssistant.addBookmark
                     });
                 break;

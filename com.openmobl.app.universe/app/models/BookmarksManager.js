@@ -40,7 +40,9 @@ function BookmarksManager(controller)
     Universe.getPrefsManager().addWatcher("bookmarks", this.prefsWatcher.bind(this));
 }
 
-BookmarksManager.prototype.startGoogle = function(galxEnc, sidEnc, hsidEnc, lsidEnc, ssidEnc, response)
+BookmarksManager.prototype.getGoogle = function() { return this.google; }
+
+BookmarksManager.prototype.startGoogle = function(galxEnc, sidEnc, hsidEnc, lsidEnc, ssidEnc, xtEnc, response)
 {
     if (response && !this.nduid) {
         var nduid;
@@ -56,8 +58,9 @@ BookmarksManager.prototype.startGoogle = function(galxEnc, sidEnc, hsidEnc, lsid
     var hsid = Mojo.Model.decrypt(this.nduid, hsidEnc);
     var lsid = Mojo.Model.decrypt(this.nduid, lsidEnc);
     var ssid = Mojo.Model.decrypt(this.nduid, ssidEnc);
+    var xt = Mojo.Model.decrypt(this.nduid, xtEnc);
     
-    this.google.setLoggedIn(galx, sid, hsid, lsid, ssid);
+    this.google.setLoggedIn(galx, sid, hsid, lsid, ssid, xt);
             
     this.google.enableOperation(true);
 };
@@ -66,12 +69,12 @@ BookmarksManager.prototype.prefsWatcher = function(prefs)
 {
     if (Utils.toBool(prefs["useGoogle"])) {
         if (this.nduid) {
-            this.startGoogle(prefs["googleGALX"],prefs["googleSID"],prefs["googleHSID"],prefs["googleLSID"],prefs["googleSSID"]);
+            this.startGoogle(prefs["googleGALX"],prefs["googleSID"],prefs["googleHSID"],prefs["googleLSID"],prefs["googleSSID"],prefs["googleXT"]);
         } else {
             new Mojo.Service.Request("palm://com.palm.preferences/systemProperties", {
                         method: "Get",
                         parameters: {"key": "com.palm.properties.nduid"},
-                        onSuccess: this.startGoogle.bind(this,prefs["googleGALX"],prefs["googleSID"],prefs["googleHSID"],prefs["googleLSID"],prefs["googleSSID"])
+                        onSuccess: this.startGoogle.bind(this,prefs["googleGALX"],prefs["googleSID"],prefs["googleHSID"],prefs["googleLSID"],prefs["googleSSID"],prefs["googleXT"])
                     });
         }
     } else {
@@ -122,6 +125,11 @@ BookmarksManager.prototype.updateBookmark = function(id, url, title, desc, folde
 BookmarksManager.prototype.removeBookmark = function(id, callback)
 {
     this.db.remove(id, callback);
+};
+
+BookmarksManager.prototype.removeBookmarksInFolder = function(folder, callback)
+{
+    this.db.removeFolder(folder, callback);
 };
 
 BookmarksManager.prototype.clearBookmarks = function()

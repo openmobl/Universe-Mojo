@@ -709,7 +709,7 @@ PageAssistant.prototype.deleteView = function()
 
 PageAssistant.prototype.isLoading = function()
 {
-    return (this.addressBar.getMode() === "title" && this.addressBar.getState() === "stop");
+    return (this.addressBar.getState() === "stop");
 };
 
 PageAssistant.prototype.onLoadStart = function()
@@ -1367,7 +1367,7 @@ PageAssistant.prototype.addToLauncher = function(title, url)
 {
     this.controller.showDialog({
             template: "bookmarks/bookmarks-add-dialog",
-            assistant: new AddBookmarkAssistant(this, -1, title, url, "", this.addToLauncherCallback.bind(this), false, false),
+            assistant: new AddBookmarkAssistant(this, -1, title, url, "", this.addToLauncherCallback.bind(this), false),
             mode: AddBookmarkAssistant.addToLauncher
         });
 };
@@ -1376,7 +1376,7 @@ PageAssistant.prototype.addBookmark = function(title, url)
 {
     this.controller.showDialog({
             template: "bookmarks/bookmarks-add-dialog",
-            assistant: new AddBookmarkAssistant(this, -1, title, url, $L("Unfiled"), this.addBookmarkCallback.bind(this), false, true),
+            assistant: new AddBookmarkAssistant(this, -1, title, url, $L("Unfiled"), this.addBookmarkCallback.bind(this), true),
             mode: AddBookmarkAssistant.addBookmark
         });
 };

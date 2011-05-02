@@ -282,6 +282,9 @@ var Utils = {
             case MenuAssistant.OrientationLock.pref:
                 item = Object.clone(MenuAssistant.OrientationLock.menu);
                 break;
+            case MenuAssistant.AddBookmark.pref:
+                item = Object.clone(MenuAssistant.AddBookmark.menu);
+                break;
         }
         
         return item;

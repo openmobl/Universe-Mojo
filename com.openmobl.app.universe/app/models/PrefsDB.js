@@ -101,6 +101,7 @@ PrefsDB.defaultPrefs = [
         { key: "googleHSID", value: "0000" },
         { key: "googleLSID", value: "0000" },
         { key: "googleSSID", value: "0000" },
+        { key: "googleXT", value: "0000" },
         
         /* View Options */
         { key: "navButton1", value: MenuAssistant.Back.pref },

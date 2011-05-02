@@ -35,6 +35,7 @@ MenuAssistant.Back = {pref: "back", menu: {icon: "back", command: "do-goBack", d
 MenuAssistant.Forward = {pref: "forward", menu: {icon: "forward", command: "do-goForward", disabled: true}};
 MenuAssistant.History = {pref: "history", menu: {iconPath: "images/menu-icon-history.png", command: "do-goHistory"}};
 MenuAssistant.Bookmarks = {pref: "bookmarks", menu: {iconPath: "images/menu-icon-bookmarks.png", command: "do-goBookmarks"}};
+MenuAssistant.AddBookmark = {pref: "addbookmark", menu: {iconPath: "images/menu-icon-new-bookmark.png", command: "do-pageBookmark"}};
 MenuAssistant.Home = {pref: "home", menu: {iconPath: "images/menu-icon-home.png", command: "do-goHome"}};
 MenuAssistant.TopSites = {pref: "topsites", menu: {iconPath: "images/menu-icon-topsites.png", command: "do-goTopSites"}};
 MenuAssistant.OrientationLock = {pref: "orientationlock", menu: {iconPath: "images/menu-icon-orientationlock.png", command: "do-goOrientationLock"}};

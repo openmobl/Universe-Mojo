@@ -59,6 +59,7 @@ ViewoptionsAssistant.buttonOptions = [
         {label: $L("Home"), value: "home"},
         {label: $L("Top Sites"), value: "topsites"},
         {label: $L("Orientation Lock"), value: "orientationlock"},
+        {label: $L("Add Bookmark"), value: "addbookmark"}
     ];
 
 ViewoptionsAssistant.prototype.setup = function()
