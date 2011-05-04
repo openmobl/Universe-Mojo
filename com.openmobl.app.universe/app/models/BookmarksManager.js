@@ -132,9 +132,9 @@ BookmarksManager.prototype.removeBookmarksInFolder = function(folder, callback)
     this.db.removeFolder(folder, callback);
 };
 
-BookmarksManager.prototype.clearBookmarks = function()
+BookmarksManager.prototype.clearBookmarks = function(callback)
 {
-    this.db.clear();
+    this.db.clear(callback);
 };
 
 /* TODO: Get by category */
@@ -151,4 +151,24 @@ BookmarksManager.prototype.getByURL = function(url, callback)
 BookmarksManager.prototype.searchForTitle = function(searchFor, callback)
 {
     this.db.searchForTitle(searchFor, callback);
+};
+
+BookmarksManager.prototype.mergeGoogleBookmarks = function(finishedCallback, data)
+{
+    var i = 0;
+    
+    for (i = 0; i < data.length; i++) {
+        this.db.touch(-1, data[i].url, data[i].title, data[i].description, data[i].labels[0], function() {});
+    }
+    
+    if (finishedCallback)
+        finishedCallback();
+};
+
+BookmarksManager.prototype.syncBookmarks = function(startingCallback, finishedCallback, fail)
+{
+    if (startingCallback)
+        startingCallback();
+    
+    this.google.downloadBookmarks(this.mergeGoogleBookmarks.bind(this, finishedCallback), fail);
 };

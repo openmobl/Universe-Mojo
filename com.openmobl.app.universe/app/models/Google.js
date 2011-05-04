@@ -33,9 +33,10 @@
  
  /*
    TODO: We need to create a hook so that when a bookmark update fails, we can
-         re-prompt for login and try again. This needs to happen from the UI
-         layer.
+         re-prompt (or pull from storage) for login and try again. This needs
+         to happen from the UI layer.
   */
+
  
 function Google(shouldOperate)
 {
@@ -53,10 +54,13 @@ function Google(shouldOperate)
     this.loggedIn = false;
 }
 
+Google.kDownloadIncrement = 25;
+
 Google.LoginFailed = "login-fail";
 Google.UnexpectedStatus = "unexpected-status";
 Google.UnfoundCookie = "unfound-cookie";
 Google.InvalidResponse = "invalid-response";
+Google.DownloadFailed = "download-failed";
 Google.ReLogin = "Please Re Login.";
 
 Google.prototype.login = function(username, password, success, fail)
@@ -384,6 +388,65 @@ Google.prototype.createOrUpdateBookmark = function(executeUrl, bookmark, callbac
                         
                     if (fail)
                         fail(Google.LoginFailed);
+                }).bind(this)
+        });
+};
+
+Google.prototype.downloadBookmarks = function(callback, fail)
+{
+    if (this.shouldOperate)
+        this.getXT(this.downloadBookmarkRecurse.bind(this, 0, [], callback, fail), fail);
+};
+
+Google.prototype.downloadBookmarkRecurse = function(offset, oldData, callback, fail)
+{
+    Mojo.Log.info("Google#downloadBookmarkRecurse");
+    
+    var executeURL = "https://www.google.com/bookmarks/api/threadsearch?fo=Starred&g=Title&q&start=" + offset + "&nr=" + Google.kDownloadIncrement;
+    
+    jQuery.ajax({
+            url: executeURL,
+            type: "GET",
+            beforeSend: (function(jqXHR, settings) {
+                            var header = this.buildHeader();
+                            if (header != "") {
+                                jqXHR.setRequestHeader("Cookie", header);
+                            }
+                        }).bind(this),
+            dataType: "text",
+            cache: false,
+            dataFilter: function(data, type){ return data.replace(")]}'",""); }, /* Google seems to return some garbage. We want to clean it up... */
+            success: (function(data, textStatus, jqXHR) {
+                            Mojo.Log.info("downloadBookmarkRecurse succeeded");
+                            
+                            var json = jQuery.parseJSON(data);
+                            
+                            if (!json && fail) {
+                                fail(Google.DownloadFailed);
+                            } else {
+                                var start = json.start;
+                                var nr = json.nr;
+
+                                var sectionContent = json.threadTitles[0].sectionContent;
+                                var newData = [];
+                                
+                                if (sectionContent.length) {
+                                    newData = oldData.concat(sectionContent);
+                                }
+                                
+                                if ((nr - start) > Google.kDownloadIncrement) {
+                                    this.downloadBookmarkRecurse(start + Google.kDownloadIncrement, newData, callback, fail);
+                                } else {
+                                    if (callback)
+                                        callback(newData);
+                                }
+                            }
+                        }).bind(this),
+            error: (function(jqXHR, textStatus, errorThrown) {
+                    Mojo.Log.error("downloadBookmarkRecurse failed -- status: " + textStatus + " err: " + errorThrown);
+                        
+                    if (fail)
+                        fail(Google.DownloadFailed);
                 }).bind(this)
         });
 };

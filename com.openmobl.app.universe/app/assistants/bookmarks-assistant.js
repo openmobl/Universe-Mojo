@@ -42,13 +42,16 @@ function BookmarksAssistant(pageIdentifier)
     this.appMenuModel = {
         visible: true,
         items: [
-            {label: $L("New Bookmark"), command: "do-sceneNewBookmark"}
+            {label: $L("New Bookmark"), command: "do-sceneNewBookmark"},
+            {label: $L("Clear Bookmarks"), command: "do-sceneClearBookmarks"}
         ]
     };
     this.cmdMenuAttr = { menuClass:"no-fade" };
     this.cmdMenuModel = {
         items: [
-            {iconPath: "images/menu-icon-new-bookmark.png", command: "do-sceneNewBookmark"}
+            {iconPath: "images/menu-icon-new-bookmark.png", command: "do-sceneNewBookmark"},
+            {},
+            {icon: "sync", command: "do-sceneSync"}
             ]
     };
     
@@ -303,6 +306,31 @@ BookmarksAssistant.prototype.listTap = function(event)
     }
 };
 
+BookmarksAssistant.prototype.syncBookmarks = function()
+{
+    var start = function() {
+            Mojo.Log.info("BookmarksAssistant#start");
+            
+            var bannerMessage = $L("Starting Bookmark Sync");
+            Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
+        };
+    var finish = function(msg) {
+            Mojo.Log.info("BookmarksAssistant#finish - " + msg);
+            
+            var bannerMessage = $L("Sync Complete! Loading bookmarks...");
+            Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
+            
+            this.updateScene();
+        };
+    var fail = function(msg) {
+            Mojo.Log.info("BookmarksAssistant#fail - " + msg);
+            
+            var bannerMessage = $L("Failed to sync bookmarks");
+            Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
+        };
+    Universe.getBookmarksManager().syncBookmarks(start.bind(this), finish.bind(this), fail.bind(this));
+};
+
 BookmarksAssistant.prototype.handleCommand = function(event)
 {
     Mojo.Log.info("BookmarksAssistant#handleCommand");
@@ -328,6 +356,16 @@ BookmarksAssistant.prototype.handleCommand = function(event)
                                         this.addBookmark.bind(this), true),
                         mode: AddBookmarkAssistant.addBookmark
                     });
+                break;
+            case "do-sceneClearBookmarks":
+                // TODO: Confirm!
+                var callback = function() {
+                        this.updateScene();
+                    };
+                Universe.getBookmarksManager().clearBookmarks(callback.bind(this));
+                break;
+            case "do-sceneSync":
+                this.syncBookmarks();
                 break;
         }
     }

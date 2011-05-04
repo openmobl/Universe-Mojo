@@ -47,16 +47,7 @@ function BookmarksDB() {
             return false;
         }
         
-        var sqlCreate = "CREATE TABLE IF NOT EXISTS '" + BookmarksDB.tableName + "' " + 
-                        "(id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL, title TEXT NOT NULL, desc TEXT NOT NULL, folder TEXT NOT NULL, " +
-                        "hitCount INTEGER DEFAULT 0, date TIMESTAMP)";
-        this.db.transaction((function (transaction) {
-                    transaction.executeSql(sqlCreate,
-                    [],
-                    function() { Mojo.Log.info("BookmarksDB#init - main created"); },
-                    this.errorHandler
-                );
-            }).bind(this));
+        this.create();
         /* TOD: Support categories */
         /*sqlCreate = "CREATE TABLE IF NOT EXISTS '" + BookmarksDB.folderTableName + "' " + 
                     "(url TEXT NOT NULL, title TEXT NOT NULL, desc TEXT NOT NULL, folder TEXT NOT NULL, " +
@@ -74,6 +65,24 @@ function BookmarksDB() {
     }
     
     return true;
+};
+
+BookmarksDB.prototype.create = function(callback)
+{
+    var sqlCreate = "CREATE TABLE IF NOT EXISTS '" + BookmarksDB.tableName + "' " + 
+                    "(id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL, title TEXT NOT NULL, desc TEXT NOT NULL, folder TEXT NOT NULL, " +
+                    "hitCount INTEGER DEFAULT 0, date TIMESTAMP, googleID TEXT)";
+    this.db.transaction((function (transaction) {
+                transaction.executeSql(sqlCreate,
+                [],
+                function() {
+                        Mojo.Log.info("BookmarksDB#init - main created"); 
+                        if (callback)
+                            callback();
+                    },
+                this.errorHandler
+            );
+        }).bind(this));
 };
 
 BookmarksDB.prototype.add = function(url, title, desc, folder, callback)
@@ -306,10 +315,22 @@ BookmarksDB.prototype.removeFolder = function(folder, callback)
     }).bind(this));
 };
 
-BookmarksDB.prototype.clear = function()
+BookmarksDB.prototype.clear = function(callback)
 {
     Mojo.Log.info("BookmarksDB#clear");
-    
+    var sqlDelete = "DROP TABLE '" + BookmarksDB.tableName + "'";
+
+    this.db.transaction((function (transaction) {
+        transaction.executeSql(sqlDelete,
+            [], 
+            (function (transaction, resultSet) {
+                Mojo.Log.info("BookmarksDB#clear - cleared");
+                this.create(callback);
+            }).bind(this),
+            function(transaction, error) {
+                this.errorHandler(transaction, error);
+            });
+    }).bind(this));
 };
 
 BookmarksDB.prototype.errorHandler = function(caller, transaction, error)

@@ -33,11 +33,11 @@
 
 var UrlUtil = {
     decode: function(url) {
-        return unescape(url);
+        return decodeURIComponent(url);
     },
     
     encode: function(url) {
-        return escape(url);
+        return encodeURIComponent(url);
     },
     
     getCookie: function(cookie, name) {
