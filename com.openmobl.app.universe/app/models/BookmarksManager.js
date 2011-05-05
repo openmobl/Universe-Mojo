@@ -153,22 +153,28 @@ BookmarksManager.prototype.searchForTitle = function(searchFor, callback)
     this.db.searchForTitle(searchFor, callback);
 };
 
-BookmarksManager.prototype.mergeGoogleBookmarks = function(finishedCallback, data)
+BookmarksManager.prototype.mergeGoogleBookmarks = function(progressiveCallback, finishedCallback, data)
 {
     var i = 0;
     
+    var callback = function() {
+            if (progressiveCallback)
+                progressiveCallback();
+        };
+    
     for (i = 0; i < data.length; i++) {
-        this.db.touch(-1, data[i].url, data[i].title, data[i].description, data[i].labels[0], function() {});
+        //this.db.touch(-1, data[i].url, data[i].title, data[i].description, data[i].labels[0], function() {});
+        this.db.syncUpdateGoogle(data[i].elementID, data[i].url, data[i].title, data[i].description, data[i].labels[0], callback.bind(this));
     }
     
     if (finishedCallback)
         finishedCallback();
 };
 
-BookmarksManager.prototype.syncBookmarks = function(startingCallback, finishedCallback, fail)
+BookmarksManager.prototype.syncBookmarks = function(startingCallback, progressCallback, finishedCallback, fail)
 {
     if (startingCallback)
         startingCallback();
     
-    this.google.downloadBookmarks(this.mergeGoogleBookmarks.bind(this, finishedCallback), fail);
+    this.google.downloadBookmarks(this.mergeGoogleBookmarks.bind(this, progressCallback, finishedCallback), fail);
 };

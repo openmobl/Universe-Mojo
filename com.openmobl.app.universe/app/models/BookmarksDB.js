@@ -105,6 +105,26 @@ BookmarksDB.prototype.add = function(url, title, desc, folder, callback)
     }).bind(this));
 };
 
+BookmarksDB.prototype.addGoogle = function(url, title, desc, folder, googleID, callback)
+{
+    Mojo.Log.info("BookmarksDB#addGoogle");
+    var sqlAdd = "INSERT INTO '" + BookmarksDB.tableName + "' (url, title, desc, folder, date, googleID) " +
+                 "VALUES (?, ?, ?, ?, ?, ?)";
+    var date = Date.now();
+
+    this.db.transaction((function (transaction) { 
+        transaction.executeSql(sqlAdd,
+        [url, title, desc, folder, date, googleID],
+        function(transaction, resultSet) {
+            Mojo.Log.info("BookmarksDB#addGoogle - results: %j", resultSet);
+            
+            if (callback)
+                callback("added");
+        },
+        this.errorHandler.bind(this, "addGoogle"));
+    }).bind(this));
+};
+
 BookmarksDB.prototype.update = function(id, url, title, desc, folder, callback)
 {
     Mojo.Log.info("BookmarksDB#update");
@@ -122,6 +142,27 @@ BookmarksDB.prototype.update = function(id, url, title, desc, folder, callback)
                 callback("updated");
         },
         this.errorHandler.bind(this, "update"));
+    }).bind(this));
+};
+
+
+BookmarksDB.prototype.updateGoogle = function(id, url, title, desc, folder, googleID, callback)
+{
+    Mojo.Log.info("BookmarksDB#updateGoogle");
+    var sqlUpdate = "REPLACE INTO '" + BookmarksDB.tableName + "' (id, url, title, desc, folder, date, googleID) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    var date = Date.now();
+
+    this.db.transaction((function (transaction) { 
+        transaction.executeSql(sqlUpdate,
+        [id, url, title, desc, folder, date, googleID],
+        function(transaction, resultSet) {
+            Mojo.Log.info("BookmarksDB#updateGoogle - results: %j", resultSet);
+            
+            if (callback)
+                callback("updated");
+        },
+        this.errorHandler.bind(this, "updateGoogle"));
     }).bind(this));
 };
 
@@ -169,7 +210,7 @@ BookmarksDB.prototype.touchResultsCallback = function(url, results)
 BookmarksDB.prototype.get = function(title, folder, callback)
 {
     Mojo.Log.info("BookmarksDB#get");
-    var sqlSelect =  "SELECT id, url, title, hitCount, date FROM '" + BookmarksDB.tableName + "' WHERE title=?";
+    var sqlSelect =  "SELECT id, url, title, hitCount, date, googleID FROM '" + BookmarksDB.tableName + "' WHERE title=?";
 
     this.db.transaction((function (transaction) {
         transaction.executeSql(sqlSelect,
@@ -191,6 +232,37 @@ BookmarksDB.prototype.get = function(title, folder, callback)
                 callback(url, results);
         },
         this.errorHandler.bind(this, "get"));
+    }).bind(this));
+};
+
+BookmarksDB.prototype.syncUpdateGoogle = function(googleID, url, title, desc, folder, callback)
+{
+    Mojo.Log.info("BookmarksDB#syncUpdateGoogle");
+    var sqlSelect =  "SELECT id, url, title, hitCount, date FROM '" + BookmarksDB.tableName + "' WHERE googleID=?";
+
+    this.db.transaction((function (transaction) {
+        transaction.executeSql(sqlSelect,
+        [googleID], 
+        (function(transaction, resultSet) {
+            var results = [];
+            
+            try {
+                if (resultSet.rows) {
+                    results = Object.clone(resultSet.rows.item(0));
+                }
+            } catch (e) {
+            
+            }
+
+            //Mojo.Log.info("BookmarksDB#get - resutls: %j", results);
+            
+            if (results && results.id) {
+                this.updateGoogle(results.id, url, title, desc, folder, googleID, callback);
+            } else {
+                this.addGoogle(url, title, desc, folder, googleID, callback);
+            }
+        }).bind(this),
+        this.errorHandler.bind(this, "syncUpdateGoogle"));
     }).bind(this));
 };
 
@@ -287,7 +359,7 @@ BookmarksDB.prototype.remove = function(id, callback)
                     callback();
             },
             function(transaction, error) {
-                this.errorHandler(transaction, error);
+                this.errorHandler("remove", transaction, error);
                 if (callback)
                     callback(transaction, error);
             });
@@ -308,7 +380,7 @@ BookmarksDB.prototype.removeFolder = function(folder, callback)
                     callback();
             },
             function(transaction, error) {
-                this.errorHandler(transaction, error);
+                this.errorHandler("removeFolder", transaction, error);
                 if (callback)
                     callback(transaction, error);
             });
@@ -328,7 +400,7 @@ BookmarksDB.prototype.clear = function(callback)
                 this.create(callback);
             }).bind(this),
             function(transaction, error) {
-                this.errorHandler(transaction, error);
+                this.errorHandler("clear", transaction, error);
             });
     }).bind(this));
 };

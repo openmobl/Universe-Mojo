@@ -314,6 +314,9 @@ BookmarksAssistant.prototype.syncBookmarks = function()
             var bannerMessage = $L("Starting Bookmark Sync");
             Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
         };
+    var progress = function() {
+            //this.updateScene();
+        };
     var finish = function(msg) {
             Mojo.Log.info("BookmarksAssistant#finish - " + msg);
             
@@ -328,7 +331,7 @@ BookmarksAssistant.prototype.syncBookmarks = function()
             var bannerMessage = $L("Failed to sync bookmarks");
             Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
         };
-    Universe.getBookmarksManager().syncBookmarks(start.bind(this), finish.bind(this), fail.bind(this));
+    Universe.getBookmarksManager().syncBookmarks(start.bind(this), progress.bind(this), finish.bind(this), fail.bind(this));
 };
 
 BookmarksAssistant.prototype.handleCommand = function(event)
