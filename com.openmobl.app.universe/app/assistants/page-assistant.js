@@ -258,6 +258,10 @@ PageAssistant.prototype.finalActivate = function(results)
 {
     Mojo.Log.info("PageAssistant#finalActivate()");
     
+    if (!Utils.toBool(results["hideIconsWhileBrowsing"])) {
+        this.menuAssistant.finishSceneLoad();
+    }
+    
     this.updateChrome();
     
     if (Utils.toBool(results["hideIconsWhileBrowsing"])) {
@@ -297,6 +301,12 @@ PageAssistant.prototype.finalActivate = function(results)
     this.privateBrowsing = Utils.toBool(results["privateBrowsing"]);
     this.addressBar.showPrivateBrowsing(this.privateBrowsing);
     
+    if (Utils.toBool(results["enableMetrix"])) {
+        Universe.identify();
+    } else if (!Utils.toBool(results["enableMetrixPrompted"])) {
+        Universe.identifyPrompt(this.controller);
+    }
+    
     
     /*if (results["openOnStart"] !== "blank") {
         this.addressBar.changeMode("title");
@@ -313,6 +323,8 @@ PageAssistant.prototype.finalActivate = function(results)
     
     this.firstOpen = false;
     
+    Universe.metrix.checkBulletinBoard(this.controller);
+
     Universe.getPrefsManager().removeWatcher(this.tabID + "-start");
     Universe.getPrefsManager().addWatcher(this.tabID, this.handlePrefsChanged.bind(this));
 };
@@ -322,6 +334,10 @@ PageAssistant.prototype.activate = function(event)
     Mojo.Log.info("PageAssistant#activate()");
     if (Universe.getPrefsManager().hasStarted()) {
         Mojo.Log.info("Preference database has loaded");
+        
+        if (!Utils.toBool(Universe.getPrefsManager().get("hideIconsWhileBrowsing"))) {
+            this.menuAssistant.finishSceneLoad();
+        }
         
         this.updateChrome();
     
@@ -358,6 +374,14 @@ PageAssistant.prototype.activate = function(event)
         
         this.privateBrowsing = Utils.toBool(Universe.getPrefsManager().get("privateBrowsing"));
         this.addressBar.showPrivateBrowsing(this.privateBrowsing);
+        
+        if (Utils.toBool(Universe.getPrefsManager().get("enableMetrix"))) {
+            Universe.identify();
+        } else if (!Utils.toBool(Universe.getPrefsManager().get("enableMetrixPrompted"))) {
+            Universe.identifyPrompt(this.controller);
+        }
+        
+        Universe.metrix.checkBulletinBoard(this.controller);
     } else {
         Mojo.Log.info("Preference database has not loaded");
         
@@ -513,6 +537,12 @@ PageAssistant.prototype.blur = function()
     //this.addressBar.show(true);
 };
 
+PageAssistant.prototype.getSupportedLanguage = function()
+{
+    /*return navigator.language;*/
+    return "en_US";
+};
+
 /* TODO: Check the length of the URL? */
 PageAssistant.prototype.openURL = function(url)
 {
@@ -555,7 +585,7 @@ PageAssistant.prototype.openURL = function(url)
         }
         
         /* TODO: Localize */
-        this.loadingURL = Mojo.appPath + "html/" + /*navigator.language +*/ "en_US/" + file;
+        this.loadingURL = Mojo.appPath + "html/" + this.getSupportedLanguage() + "/" + file;
         Mojo.Log.info("Found local path for \"" + url + "\": " + this.loadingURL);
     }
     
@@ -617,19 +647,22 @@ PageAssistant.prototype.showProgress = function(progress)
     
     Mojo.Log.info("PageAssistant#showProgress(" + newProgress + ")");
     
-    this.showChromeIfNeeded(true);
-    
     if (newProgress < 100) {
         this.bookmarked.style.display = "none";
+        
+        this.showChromeIfNeeded(true);
     } else {
         if (Utils.toBool(Universe.getPrefsManager().get("showBookmark"))) {
             var callback = this.displayBookmarked.bind(this);
             
             Universe.getBookmarksManager().getByURL(this.addressBar.getURL(), callback);
         }
+        
+        /* This is a hack to ensure that the page does not "bounce" after loading. */
+        if (!progress)
+            this.showChromeIfNeeded(true);
     }
     
-    /* Only show the progress comet if the address bar is visible */
     if (this.progressBar.style.display === "none" && this.addressBar.isVisible()) {
         this.progressBar.style.display = "block";
     }
@@ -662,7 +695,7 @@ PageAssistant.prototype.showProgress = function(progress)
     }
     
     // TODO: This is sort of a hack. It probably needs to be removed.
-    this.isEditing = false;
+    //this.isEditing = false;
 };
 
 PageAssistant.prototype.launchCard = function(params)

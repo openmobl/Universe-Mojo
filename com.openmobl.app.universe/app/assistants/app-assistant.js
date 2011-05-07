@@ -39,6 +39,9 @@ function AppAssistant()
     
     Universe = this;
     
+    this.metrix = new Metrix();
+    this.identified = false;
+    
     this.mainStageName = "main";
     this.dockStageName = "dock";
     this.downloadsStageName = "downloads";
@@ -85,6 +88,33 @@ AppAssistant.prototype.getBookmarksManager = function() { return this.bookmarksM
 AppAssistant.prototype.getPrefsManager = function() { return this.prefsManager; };
 AppAssistant.prototype.needsSetup = function() { return this.needSetup; };
 AppAssistant.prototype.wasSetup = function() { this.needSetup = false; };
+AppAssistant.prototype.hasIdentified = function() { return this.identified; };
+AppAssistant.prototype.identify = function()
+{
+    if (!this.hasIdentified()) {
+        this.metrix.postDeviceData(true);
+        this.identified = true;
+    }
+};
+AppAssistant.prototype.identifyPrompt = function(controller)
+{
+    controller.showAlertDialog({
+            allowHTMLMessage: true,
+            title: $L("Auto Feedback"),
+            message: $L("Universe would like to collect anonymous information about your device's model, OS and locale. Is this OK?<br/><br/>You can change your mind or get more information from the &quot;Preferences &amp; Accounts&quot; scene later."),
+            onChoose: (function(choice) {
+                    if (choice === "yes") {
+                        Universe.getPrefsManager().set("enableMetrix", true);
+                        Universe.identify();
+                    }
+                    Universe.getPrefsManager().set("enableMetrixPrompted", true);
+                }).bind(this),
+            choices: [
+                { label: $L("Yes"), type: "affirmative", value: "yes" },
+                { label: $L("No"), type: "negative", value: "no" }
+            ]
+        });
+};
 AppAssistant.prototype.getActiveStageController = function()
 {
     var stageController = this.controller.getStageController(this.mainStageName);

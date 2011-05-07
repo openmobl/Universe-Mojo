@@ -85,6 +85,18 @@ AppsupportinfoAssistant.prototype.setup = function() {
 					detail: resources[j].url,
 					type: 'web'
 				});
+			} else if (resources[j].type === 'twitter') {
+				helpitems.push({
+					text: resources[j].label,
+					detail: "http://twitter.com/#!/" + resources[j].twitter,
+					type: 'twitter'
+				});
+			} else if (resources[j].type === 'facebook') {
+				helpitems.push({
+					text: resources[j].label,
+					detail: resources[j].url,
+					type: 'facebook'
+				});
 			} else if (resources[j].type === 'scene') {
 				helpitems.push({
 					text: resources[j].label,
@@ -138,6 +150,8 @@ AppsupportinfoAssistant.prototype._renderHelpList = function(widget, model, node
 
 AppsupportinfoAssistant.prototype.handleListTap = function(event) {
 	switch (event.item.type) {
+        case 'twitter':
+        case 'facebook':
 		case 'web':
 			this.controller.serviceRequest("palm://com.palm.applicationManager", {
 				method: "open",

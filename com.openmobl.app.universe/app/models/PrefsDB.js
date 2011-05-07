@@ -70,6 +70,8 @@ function PrefsDB(callback) {
 };
 
 PrefsDB.defaultPrefs = [
+        { key: "hasDoneFirstUse", value: "false" },
+        
         /* General */
         { key: "homePage", value: "about:home" },
         { key: "openOnStart", value: "homepage" },
@@ -109,6 +111,10 @@ PrefsDB.defaultPrefs = [
         { key: "navButton3", value: MenuAssistant.Home.pref },
         { key: "navButton4", value: MenuAssistant.Bookmarks.pref },
         { key: "navButton5", value: MenuAssistant.History.pref },
+        
+        /* Anonymous Data Collection */
+        { key: "enableMetrix", value: "false" },
+        { key: "enableMetrixPrompted", value: "false" },
         
     ];
 

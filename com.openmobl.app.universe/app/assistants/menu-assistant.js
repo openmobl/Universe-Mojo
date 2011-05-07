@@ -94,6 +94,7 @@ function MenuAssistant(appAssistant, scene)
     };
     this.cmdMenuAttr = { menuClass:"no-fade" };
     this.cmdMenuModel = {
+        visible: false,
         items: [
             {items: [MenuAssistant.Back.menu]},
             {items: [MenuAssistant.Forward.menu]},
@@ -116,6 +117,12 @@ MenuAssistant.prototype.showBrowserIcons = function(scene)
 {
     Mojo.Log.info("MenuAssistant#showBrowserIcons");
     this.scene.controller.setupWidget(Mojo.Menu.commandMenu, this.cmdMenuAttr, this.cmdMenuModel);
+};
+
+MenuAssistant.prototype.finishSceneLoad = function()
+{
+    this.cmdMenuModel.visible = true;
+    this.scene.controller.modelChanged(this.cmdMenuModel);
 };
 
 MenuAssistant.prototype.updateNavigationIcons = function()

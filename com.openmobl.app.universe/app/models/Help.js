@@ -71,5 +71,7 @@ helpData.lookup =
     
     
 	"googleEmail": { title: $L("Google Email"), data: $L("This is your Google Email address that you use to log into Google Bookmarks.")},
-	"googlePassword": { title: $L("Google Password"), data: $L("This is the password that you use to log into Google Bookmarks. This password is not stored on the device.")}
+	"googlePassword": { title: $L("Google Password"), data: $L("This is the password that you use to log into Google Bookmarks. This password is not stored on the device.")},
+    
+    "anonymousStats": {title: $L("Anonymous Stats"), data: $L("Universe uses the Metrix library to collect anonymous statistics that include the following:<br/><ul><li>Device id</li><li>App Info (name, version)</li><li>WebOS build number</li><li>WebOS version</li><li>Screen resolution</li><li>Device Model</li><li>Carrier</li><li>Locale</ul>Please note, Universe DOES NOT report web page, bookmark or browser history usage. This data is only used to help make decisions for new features and to aid in the customer support process.<br/><br/>This information is very helpful and it is recommended that you leave this feature on.")},
 };

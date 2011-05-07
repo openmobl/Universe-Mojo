@@ -9,13 +9,15 @@
     License for the specific language governing rights and limitations
     under the License.
 
-    The Original Code is OpenMobl Systems code.
+    The Original Code is WebOS-Internals code.
 
     The Initial Developer of the Original Code is OpenMobl Systems.
     Portions created by OpenMobl Systems are Copyright (C) 2010-2011
     OpenMobl Systems. All Rights Reserved.
 
     Contributor(s):
+        Rod Whitby
+        Brandon VanBelle
         OpenMobl Systems
         Donald C. Kirker <donald.kirker@openmobl.com>
 

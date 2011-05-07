@@ -32,12 +32,12 @@
 
     "copyright": "Copyright © 2010-2011 OpenMobl Systems. All Rights Reserved. Portions copyright Palm, Inc., or its subsidiaries.",
     "support": {
-        "url": "http://www.openmobl.com/support",
+        "url": "http://support.openmobl.com/",
         "email": {
             "address": "support@openmobl.com",
             "subject": "Universe InApp Support Request"
         },
-        "phone": "408-372-7256",
+        "phone": "+1 408 372-7256",
         "resources": [
             {
                 "type": "web",
@@ -45,14 +45,14 @@
                 "url": "http://openmobl.mobi/help/"
             },
             {
-                "type": "web",
+                "type": "facebook",
                 "label": "Facebook",
                 "url": "http://www.facebook.com/pages/Universe-Web-Browser/149809205071972"
             },
             {
-                "type": "web",
-                "label": "Twitter",
-                "url": "http://twitter.com/#!/openmobl"
+                "type": "twitter",
+                "label": "@UniverseWebOS",
+                "twitter": "UniverseWebOS"
             }
         ]
     }

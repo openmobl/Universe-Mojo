@@ -186,6 +186,11 @@ div#data
     margin: 10px;
 }
 
+/* App Support Info */
+
+.app-support-info-item.facebook 		{ background-image: url(../images/providers/facebook-32x32.png); }
+.app-support-info-item.twitter 			{ background-image: url(../images/providers/twitter-32x32.png); }
+
 /* Bookmark Overlay */
 .bookmarked-icon
 {

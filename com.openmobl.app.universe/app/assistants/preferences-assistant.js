@@ -117,6 +117,8 @@ PreferencesAssistant.prototype.setup = function()
         this.setupToggle("autoRotate", Utils.toBool(prefs.get("autoRotate")));
         this.setupToggle("showBookmark", Utils.toBool(prefs.get("showBookmark")));
         
+        this.setupToggle("enableMetrix", Utils.toBool(prefs.get("enableMetrix")));
+        
         this.controller.listen("clearHistory", Mojo.Event.tap, this.clearHistoryHandler);
         this.controller.listen("clearCookies", Mojo.Event.tap, this.clearCookiesHandler);
         this.controller.listen("clearCache", Mojo.Event.tap, this.clearCacheHandler);
@@ -153,6 +155,8 @@ PreferencesAssistant.prototype.cleanup = function()
     this.destroyToggle("hideIconsWhileBrowsing");
     this.destroyToggle("autoRotate");
     this.destroyToggle("showBookmark");
+    
+    this.destroyToggle("enableMetrix");
     
     this.controller.stopListening("clearHistory", Mojo.Event.tap, this.clearHistoryHandler);
     this.controller.stopListening("clearCookies", Mojo.Event.tap, this.clearCookiesHandler);
