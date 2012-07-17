@@ -56,6 +56,7 @@ function AppAssistant()
     this.supportSceneName = "appsupportinfo";
     this.helpSceneName = "help";
     this.downloadsSceneName = "download";
+    this.tabsSceneName = "tabs";
     
     //this.menuAssistant = new MenuAssistant(this);
     this.tabManager = undefined;
@@ -79,6 +80,7 @@ AppAssistant.prototype.setup = function()
     this.tabManager = new TabManager(this.controller);
     this.historyManager = new HistoryManager();
     this.bookmarksManager = new BookmarksManager(this.controller);
+    this.xappManager = new CrossAppManager();
 };
 
 //AppAssistant.prototype.getMenuAssistant = function() { return this.menuAssistant; };
@@ -86,6 +88,7 @@ AppAssistant.prototype.getTabManager = function() { return this.tabManager; };
 AppAssistant.prototype.getHistoryManager = function() { return this.historyManager; };
 AppAssistant.prototype.getBookmarksManager = function() { return this.bookmarksManager; };
 AppAssistant.prototype.getPrefsManager = function() { return this.prefsManager; };
+AppAssistant.prototype.getCrossAppManager = function() { return this.xappManager; };
 AppAssistant.prototype.needsSetup = function() { return this.needSetup; };
 AppAssistant.prototype.wasSetup = function() { this.needSetup = false; };
 AppAssistant.prototype.hasIdentified = function() { return this.identified; };
@@ -262,7 +265,7 @@ AppAssistant.prototype.handleLaunch = function(params)
 	params field and launch the main stage, if necessary.
 	*/
 
-    Mojo.Log.info("Launched with params: " + Object.toJSON(params));
+    Mojo.Log.info("Launched with params: ", Object.toJSON(params));
 
     var stageName = this.mainStageName + "-" + Date.now();
     

@@ -4,7 +4,7 @@ STAGING="staging/"
 METRIX="MetrixLibrary/"
 
 if [ ! -d ${METRIX} ]; then
-    echo "Please download the Metrix libraries"
+    echo "Please download the Metrix libraries and extract into ./MetrixLibrary"
     exit
 fi;
 
@@ -30,6 +30,10 @@ cp ${METRIX}app/models/metrix.js ${STAGING}app/models/
 cp ${METRIX}app/models/metrixCore.js ${STAGING}app/models/
 cp ${METRIX}app/models/asyncWrappers.js ${STAGING}app/models/
 cp -R ${METRIX}app/views/metrix ${STAGING}app/views/
+
+echo "**** Generating Build Information"
+
+./gen_build.sh ${STAGING}
 
 echo "**** Packaging Universe"
 

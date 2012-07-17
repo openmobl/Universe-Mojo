@@ -1,4 +1,6 @@
 [
+    { "source": "buildinfo.js" },
+    
     { "source": "app/assistants/addressbar.js" },
     { "source": "app/assistants/smartmenu.js" },
     { "source": "app/assistants/tab-manager.js" },
@@ -9,6 +11,7 @@
     
     { "source": "app/models/BookmarksDB.js" },
     { "source": "app/models/BookmarksManager.js" },
+    { "source": "app/models/CrossAppManager.js" },
     { "source": "app/models/Cookie.js" },
     { "source": "app/models/Google.js" },
     { "source": "app/models/Help.js" },
@@ -30,6 +33,7 @@
     { "scenes": "about", "source": "app/assistants/about-assistant.js" },
     { "scenes": "preferences", "source": "app/assistants/preferences-assistant.js" },
     { "scenes": "appsupportinfo", "source": "app/assistants/appsupportinfo-assistant.js" },
+    { "scenes": "tabs", "source": "app/assistants/tabs-assistant.js" },
     { "scenes": "topsites", "source": "app/assistants/topsites-assistant.js" },
     { "scenes": "viewoptions", "source": "app/assistants/viewoptions-assistant.js" },
     

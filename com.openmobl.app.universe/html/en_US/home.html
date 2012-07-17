@@ -32,46 +32,228 @@
 -->
 <html>
   <head>
-    <meta name="viewport" content="width=device-width; initial-scale=1.0; user-scalable=no"/>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; user-scalable=no;"/>
     <style type="text/css">
+        body {
+            font-family: "sans-serif";
+            padding: 0px;
+            margin: 0px;
+        }
+        
+        .header-background {
+            margin: 10px auto 0px auto;
+            
+            width: 75%;
+            height: 77px;
+            background-color: rgb(59, 89, 152);
+            
+        }
+        
         .header {
+            height: 72px;
+            background-color: white;
+            
             text-align: center;
-            font-size: 20px;
             font-weight: bold;
         }
         
-        .container {
-            position: relative;
-            padding: 5px 5px 5px 5px;
-            min-height: 90px;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
-            margin-top: 20px;
-            border: 1px solid #999;
-            -webkit-border-radius: 5px;
+        .ezine {
+            position: fixed;
+            top: 0px;
+            left: 2px;
+            /*width: 48px;
+            height: 107px;
+            background: url("ezine.png") no-repeat;*/
         }
         
-        .logo {
+        .body-content {
+            width: 100%;
+            height: 100%;
+            background-color: rgb(238, 238, 238);
+        }
+        
+        .green {
+            background-color: rgb(168, 176, 67);
+        }
+        .red {
+            background-color: rgb(168, 0, 0);
+        }
+        
+        .box-background {
+            width: 120px;
+            height: 100px;
+            
+            float: left;
+            margin: 10px;
+        }
+        
+        .box {
+            width: 115px;
+            height: 100px;
+            margin-left: 5px;
+            padding: 0px;
+            
+            background-color: white;
+        }
+        
+        .shadow {
+            display: inline-block;
+            width: 115px;
+            height: 106px;
+            margin-top: 1px;
+            
+            background: url("tile-background.png");
+        }
+        
+        .content {
+            width: 104px;
+            height: 89px;
+            
+            margin-top: -100px;
+            
+            padding: 5px;
+            
+        }
+        
+        .title {
+            font-size: 90%;
+            font-weight: bold;
+        }
+        
+        .desc {
+            font-size: 40%;
+        }
+        
+        .footer {
             position: absolute;
-            right: 2px;
-            bottom: 2px;
-            background: url(../../icon-small.png) 0 0 no-repeat;
-            width: 48px;
-            height: 48px;
+            bottom: 0px;
+            width: 100%;
+            
+            text-align: center;
+            color: grey;
+            font-size: 30%;
+        }
+        
+        a.ribbon {
+            color: #eee;
+            text-decoration: none;
+        }
+        
+        .ribbon {
+            color: #eee;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            width: 35px;
+        }
+        
+        .ribbon .top {
+            border-bottom: solid 1px rgba(255, 255, 255, 0.6);
+            -webkit-border-radius: 1px 1px 0px 0px;
+            border-radius: 1px 1px 0px 0px;
+            font-size: 11px;
+            padding: 4px 0;
+            position: relative;
+            text-transform: uppercase;
+        }
+        
+        .ribbon .ribbon-piece {
+            background-color: rgba(102, 102, 102, 1);
+            -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            -webkit-transition: background-color 0.5s ease-in;
+            transition: background-color 0.5s ease-in;
+        }
+        
+        .ribbon .bottom {
+            font-size: 17px;
+            padding: 5px 0;
+        }
+        
+        .ribbon .tail {
+            height: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .ribbon .tail .left {
+            left: -9px;
+            -moz-transform: rotate(-25deg);
+            -ms-transform: rotate(-25deg);
+            -o-transform: rotate(-25deg);
+            -webkit-transform: rotate(-25deg);
+            transform: rotate(-25deg);
+        }
+
+        .ribbon .tail .right {
+            right: -9px;
+            -moz-transform: rotate(25deg);
+            -ms-transform: rotate(25deg);
+            -o-transform: rotate(25deg);
+            -webkit-transform: rotate(25deg);
+            transform: rotate(25deg);
+        }
+        
+        .ribbon .tail .left, .ribbon .tail .right {
+            height: 10px;
+            position: absolute;
+            top: -10px;
+            width: 50px;
+        }
+        
+        .marker {
+            -webkit-transform: rotate(-90deg);
+            color: white;
+            
+            height: 40px;
         }
     </style>
     <title>Welcome Home!</title>
   </head>
   <body>
-    <div class="header">Welcome to Universe!</div>
-    <div class="container">
-      <div class="logo"></div>
-      <form method="GET" action="http://www.google.com/search">
-        <input type="search" name="q" placeholder="Google" value="" results="0" size="30" />
-      </form>
-      <a href="http://openmobl.mobi/home/">Learn More</a><br/>
-      <a href="http://openmobl.mobi/help/">Get Support</a>
+    <div class="body">
+      <div class="header-background">
+        <div class="header"><img src="../../icon-small.png" alt=""><br/>Welcome to Universe!</div>
+        <!--<div class="ezine" onclick="window.location='http://openmobl.mobi/ezine/';"></div>-->
+        <div class="ezine">
+          <a class="ribbon date" href="http://openmobl.mobi/ezine/">
+            <div class="top ribbon-piece"></div>
+            <div class="bottom ribbon-piece">
+              <div class="marker">eZine</div>
+            </div>
+            <div class="tail">
+              <div class="left ribbon-piece"></div>
+              <div class="right ribbon-piece"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <div class="body-content">
+        <div class="box-background red">
+          <div class="box">
+            <div class="shadow"></div>
+            <div class="content" onclick="window.location='http://openmobl.mobi/help/';">
+              <div class="title">Need Help?</div>
+              <div class="desc">Click Here!</div>
+            </div>
+          </div>
+        </div>
+      
+        <div class="box-background green">
+          <div class="box">
+            <div class="shadow"></div>
+            <div class="content" onclick="window.location='http://openmobl.mobi/home/';">
+              <div class="title">More Info</div>
+              <div class="desc">Learn more about apps from OpenMobl</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer">
+          Copyright &copy; 2011 OpenMobl Systems.
+        </div>
+      </div>
     </div>
   </body>
 </html>

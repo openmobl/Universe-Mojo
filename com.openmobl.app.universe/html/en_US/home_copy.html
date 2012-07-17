@@ -1,0 +1,120 @@
+<!-- 
+    The contents of this file are subject to the Mozilla Public License
+    Version 1.1 (the "License"); you may not use this file except in
+    compliance with the License. You may obtain a copy of the License at
+    http://www.mozilla.org/MPL/
+
+    Software distributed under the License is distributed on an "AS IS"
+    basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+    License for the specific language governing rights and limitations
+    under the License.
+
+    The Original Code is OpenMobl Systems code.
+
+    The Initial Developer of the Original Code is OpenMobl Systems.
+    Portions created by OpenMobl Systems are Copyright (C) 2010-2011
+    OpenMobl Systems. All Rights Reserved.
+
+    Contributor(s):
+        OpenMobl Systems
+        Donald C. Kirker <donald.kirker@openmobl.com>
+
+    Alternatively, the contents of this file may be used under the terms
+    of the GNU General Public License Version 2 license (the  "GPL"), in
+    which case the provisions of GPL License are applicable instead of
+    those above. If you wish to allow use of your version of this file only
+    under the terms of the GPL License and not to allow others to use
+    your version of this file under the MPL, indicate your decision by
+    deleting the provisions above and replace them with the notice and
+    other provisions required by the GPL License. If you do not delete
+    the provisions above, a recipient may use your version of this file
+    under either the MPL or the GPL License.
+-->
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; user-scalable=no;"/>
+    <style type="text/css">
+        body {
+            display: inline-block;
+            position: relative;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .header {
+            background: url(../../images/local-header.png) 0 0 repeat-x;
+            width: 100%;
+            height: 90px;
+            overflow: hidden;
+        }
+        
+        .content {
+            position: relative;
+            top: -30px;
+        }
+        
+        .title {
+            margin-left: 15%;
+            margin-right: 15%;
+            
+            height: 50px;
+            border-width: 8px 11px 12px 11px;
+            -webkit-border-image: url(../../images/local-title-header.png) 8 11 12 11 repeat repeat;
+            -webkit-box-sizing: border-box;
+            
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .container {
+            position: relative;
+            padding: 5px 5px 5px 5px;
+            min-height: 90px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 20px;
+        }
+        
+        .logo {
+            position: absolute;
+            top: 2px;
+            width: 100%;
+            
+            text-align: center;
+        }
+        
+        .footer {
+            width: 100%;
+            
+            text-align: center;
+        }
+        
+        .search-field {
+            width: 100%;
+            
+            background-color: white;
+            border: 2px inset;
+            border-radius: 10px;
+        }
+    </style>
+    <title>Welcome Home!</title>
+  </head>
+  <body>
+    <div class="header"></div>
+    <div class="logo"><img src="../../icon-small.png" alt=""></div>
+    <div class="content">
+      <div class="title">Welcome to Universe!</div>
+      <div class="container">
+        <form method="GET" action="http://www.google.com/search">
+          <input class="search-field" type="search" name="q" placeholder="Google" value="" results="0" />
+        </form>
+      </div>
+      <div class="footer">
+        <a href="http://openmobl.mobi/home/">Learn More</a>&nbsp;|&nbsp;<a href="http://openmobl.mobi/help/">Get Support</a>
+      </div>
+    </div>
+  </body>
+</html>

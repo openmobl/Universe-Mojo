@@ -130,8 +130,6 @@ HistoryAssistant.prototype.listDivider = function(itemModel)
 {
     Mojo.Log.info("HistoryAssistant#listDivider");
     
-    Mojo.Log.info("Lookup divider name for item: " + Object.toJSON(itemModel));
-    
     var label = HistoryAssistant.Older;
     
     if (itemModel.date > this.midnight) {

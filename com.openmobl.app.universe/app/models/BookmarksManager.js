@@ -18,6 +18,7 @@
     Contributor(s):
         OpenMobl Systems
         Donald C. Kirker <donald.kirker@openmobl.com>
+        Nelsun Apps
 
     Alternatively, the contents of this file may be used under the terms
     of the GNU General Public License Version 2 license (the  "GPL"), in
@@ -69,12 +70,17 @@ BookmarksManager.prototype.prefsWatcher = function(prefs)
 {
     if (Utils.toBool(prefs["useGoogle"])) {
         if (this.nduid) {
-            this.startGoogle(prefs["googleGALX"],prefs["googleSID"],prefs["googleHSID"],prefs["googleLSID"],prefs["googleSSID"],prefs["googleXT"]);
+            this.startGoogle(prefs["googleGALX"],prefs["googleSID"],
+                             prefs["googleHSID"],prefs["googleLSID"],
+                             prefs["googleSSID"],prefs["googleXT"]);
         } else {
             new Mojo.Service.Request("palm://com.palm.preferences/systemProperties", {
                         method: "Get",
                         parameters: {"key": "com.palm.properties.nduid"},
-                        onSuccess: this.startGoogle.bind(this,prefs["googleGALX"],prefs["googleSID"],prefs["googleHSID"],prefs["googleLSID"],prefs["googleSSID"],prefs["googleXT"])
+                        onSuccess: this.startGoogle.bind(this,prefs["googleGALX"],
+                                        prefs["googleSID"],prefs["googleHSID"],
+                                        prefs["googleLSID"],prefs["googleSSID"],
+                                        prefs["googleXT"])
                     });
         }
     } else {
@@ -92,16 +98,27 @@ BookmarksManager.prototype.addBookmark = function(url, title, desc, folder)
     };
     this.db.touch(-1, url, title, desc, folder, callback);
     this.google.addBookmark(title, url, folder,
-            (function() {
+            (function(data) {
                     Mojo.Log.info("BookmarksManager#addBookmarkGoogleSuccess");
                     var bannerMessage = $L("Added bookmark to Google");
-                    Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-bookmark.png"}, {source: "notification"}, "Universe");
+                    Mojo.Controller.getAppController().showBanner({
+                            messageText: bannerMessage,
+                            icon: "images/notification-small-bookmark.png"
+                        }, {
+                            source: "notification"
+                        }, "Universe");
+                    // TODO: Update Google ID
                 }).bind(this),
             (function(reason) {
-                    Mojo.Log.info("BookmarksManager#addBookmarkGoogleFail - reason: " + Object.toJSON(reason));
+                    Mojo.Log.info("BookmarksManager#addBookmarkGoogleFail - reason: ", Object.toJSON(reason));
                     
                     var bannerMessage = $L("Failed to add bookmark to Google");
-                    Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-bookmark.png"}, {source: "notification"}, "Universe");
+                    Mojo.Controller.getAppController().showBanner({
+                            messageText: bannerMessage,
+                            icon: "images/notification-small-bookmark.png"
+                        }, {
+                            source: "notification"
+                        }, "Universe");
                     /*this.controller.showAlertDialog({
                             title: $L("Google Bookmark Save Failed"),
                             message: $L("We could not add your bookmark to Google. Please try again."),
@@ -117,7 +134,12 @@ BookmarksManager.prototype.updateBookmark = function(id, url, title, desc, folde
 {
     var callback = function() {
         var bannerMessage = $L("Updated Bookmark");
-        Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-bookmark.png"}, {source: "notification"}, "Universe");
+        Mojo.Controller.getAppController().showBanner({
+                messageText: bannerMessage,
+                icon: "images/notification-small-bookmark.png"
+            }, {
+                source: "notification"
+            }, "Universe");
     };
     this.db.touch(id, url, title, desc, folder, callback);
 };
@@ -130,6 +152,11 @@ BookmarksManager.prototype.removeBookmark = function(id, callback)
 BookmarksManager.prototype.removeBookmarksInFolder = function(folder, callback)
 {
     this.db.removeFolder(folder, callback);
+};
+
+BookmarksManager.prototype.removeBookmarkByURLAndFolder = function(url, folder, callback)
+{
+    this.db.removeByURLAndFolder(url, folder, callback);
 };
 
 BookmarksManager.prototype.clearBookmarks = function(callback)
@@ -164,11 +191,26 @@ BookmarksManager.prototype.mergeGoogleBookmarks = function(progressiveCallback, 
     
     for (i = 0; i < data.length; i++) {
         //this.db.touch(-1, data[i].url, data[i].title, data[i].description, data[i].labels[0], function() {});
-        this.db.syncUpdateGoogle(data[i].elementID, data[i].url, data[i].title, data[i].description, data[i].labels[0], callback.bind(this));
+        this.db.syncUpdateGoogle(data[i].elementID, data[i].url,
+                                 data[i].title, data[i].description,
+                                 data[i].labels[0], callback.bind(this));
     }
     
     if (finishedCallback)
         finishedCallback();
+};
+
+BookmarksManager.prototype.uploadGoogleBookmarks = function(progressiveCallback, finishedCallback, fail, data)
+{
+    var updateGoolgeIDs = function(ids) {
+            var i = 0;
+            for (i = 0; i < ids.length; i++) {
+                //this.db.
+            }
+            if (finishedCallback)
+                finishedCallback();
+        };
+    this.google.uploadBookmarks(data, updateGoolgeIDs.bind(this), fail);
 };
 
 BookmarksManager.prototype.syncBookmarks = function(startingCallback, progressCallback, finishedCallback, fail)
@@ -176,5 +218,11 @@ BookmarksManager.prototype.syncBookmarks = function(startingCallback, progressCa
     if (startingCallback)
         startingCallback();
     
-    this.google.downloadBookmarks(this.mergeGoogleBookmarks.bind(this, progressCallback, finishedCallback), fail);
+    var googleMergeNextStage = function() {
+            if (finishedCallback)
+                finishedCallback();
+            //this.db.syncUploadGoogle(this.uploadGoogleBookmarks.bind(this, progressiveCallback, finishedCallback, fail));
+        };
+    
+    this.google.downloadBookmarks(this.mergeGoogleBookmarks.bind(this, progressCallback, googleMergeNextStage.bind(this)), fail);
 };

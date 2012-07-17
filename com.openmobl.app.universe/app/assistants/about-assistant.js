@@ -45,7 +45,9 @@ AboutAssistant.prototype.setup = function()
 {
     /* TODO: We could use a template */
     this.controller.get("app-title").innerHTML = Mojo.appInfo.title;
-    this.controller.get("version").innerHTML = Mojo.appInfo.version;
+    this.controller.get("version").innerHTML = Build.buildVer;
+    this.controller.get("build-num").innerHTML = Build.buildNum;
+    this.controller.get("build-date").innerHTML = Build.buildDate;
     
     this.controller.listen("license", Mojo.Event.tap, this.licenseHandler);
 };

@@ -98,7 +98,7 @@ SmartMenu.prototype.isVisible = function()
 };
 SmartMenu.prototype.makeVisible = function(visible)
 {
-    Mojo.Log.info("SmartMenu#makeVisible(" + visible + ")");
+    Mojo.Log.info("SmartMenu#makeVisible(", visible, ")");
     
     if (visible === true) {
         Mojo.Log.info("SmartMenu#makeVisible/visible");
@@ -114,7 +114,7 @@ SmartMenu.prototype.updateEvent = function()
     Mojo.Log.info("SmartMenu#updateEvent");
     
     var searchFor = this.addressBar.getURL(); // TODO: Just pass it in?...
-    Mojo.Log.info("searchFor = " + searchFor);
+    Mojo.Log.info("searchFor =", searchFor);
     
     this.clearList();
     

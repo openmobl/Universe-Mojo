@@ -95,6 +95,7 @@ PrefsDB.defaultPrefs = [
         { key: "autoRotate", value: "true" },
         { key: "rotateLock", value: "false" },
         { key: "showBookmark", value: "false" },
+        { key: "useDeskmarks", value: "false" },
         
         /* Google Bookmarks */
         { key: "useGoogle", value: "false" },

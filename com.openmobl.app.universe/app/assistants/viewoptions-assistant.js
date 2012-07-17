@@ -109,7 +109,7 @@ ViewoptionsAssistant.prototype.handlePrefsChange = function(update)
 
 ViewoptionsAssistant.prototype.setupList = function(name, value, data, displayLabel)
 {
-    Mojo.Log.info("ViewoptionsAssistant#setupList - name: " + name + " value: " + value);
+    Mojo.Log.info("ViewoptionsAssistant#setupList - name:", name, " value:", value);
     var attributes = {
             label: displayLabel,
             choices: data,

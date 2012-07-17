@@ -38,6 +38,7 @@ MenuAssistant.Bookmarks = {pref: "bookmarks", menu: {iconPath: "images/menu-icon
 MenuAssistant.AddBookmark = {pref: "addbookmark", menu: {iconPath: "images/menu-icon-new-bookmark.png", command: "do-pageBookmark"}};
 MenuAssistant.Home = {pref: "home", menu: {iconPath: "images/menu-icon-home.png", command: "do-goHome"}};
 MenuAssistant.TopSites = {pref: "topsites", menu: {iconPath: "images/menu-icon-topsites.png", command: "do-goTopSites"}};
+MenuAssistant.Tabs = {pref: "tabs", menu: {iconPath: "images/menu-icon-tabs.png", command: "do-goTabs"}};
 MenuAssistant.OrientationLock = {pref: "orientationlock", menu: {iconPath: "images/menu-icon-orientationlock.png", command: "do-goOrientationLock"}};
 
 MenuAssistant.BackMenu = {label: $L("Back"), command: MenuAssistant.Back.menu.command, checkEnabled: true, shortcut: "b"};
@@ -46,7 +47,8 @@ MenuAssistant.ReloadMenu = {label: $L("Reload"), command: "do-goReload", checkEn
 MenuAssistant.HomeMenu = {label: $L("Home"), command: MenuAssistant.Home.menu.command, shortcut: "h"};
 MenuAssistant.BookmarksMenu = {label: $L("Bookmarks"), command: MenuAssistant.Bookmarks.menu.command};
 MenuAssistant.HistoryMenu = {label: $L("History"), command: MenuAssistant.History.menu.command};
-MenuAssistant.TopSitesMenu = {label: $L("Top Sites"), command: "do-goTopSites", checkEnabled: true};
+MenuAssistant.TopSitesMenu = {label: $L("Top Sites"), command: "do-goTopSites"};
+MenuAssistant.TabsMenu = {label: $L("Tabs"), command: "do-goTabs"};
 
 MenuAssistant.Bookmark = {label: $L("Bookmark"), command: "do-pageBookmark"};
 MenuAssistant.AddToLauncher = {label: $L("Add To Launcher"), command: "do-pageAddToLauncher"};
@@ -68,22 +70,28 @@ function MenuAssistant(appAssistant, scene)
             Mojo.Menu.editItem,
             {label: $L("New Card"), command: "do-appNewCard", shortcut: "n"},
             {label: $L("Open File..."), command: "do-appOpen", shortcut: "o"},
+            {label: $L("Open Air2Share..."), command: "do-appOpenNetwork"},
             
             {label: $L("Navigation"), items: [
+                        /* Page Nav */
                         MenuAssistant.BackMenu,
                         MenuAssistant.ForwardMenu,
                         MenuAssistant.ReloadMenu,
                         MenuAssistant.HomeMenu,
+                        
+                        /* Scenes */
                         MenuAssistant.TopSitesMenu,
                         MenuAssistant.BookmarksMenu,
                         MenuAssistant.HistoryMenu
                     ]},
             
             {label: $L("Page"), items: [
+                        /* TODO: Organize this and categorize it better */
                         MenuAssistant.Bookmark,
                         MenuAssistant.AddToLauncher,
-                        MenuAssistant.Relego, MenuAssistant.Share,
-                        MenuAssistant.Tweet
+                        MenuAssistant.Relego,
+                        MenuAssistant.Share,
+                        MenuAssistant.Tweet /* Should probably be in "Share..." */
                     ]},
             
             {label: $L("Preferences & Accounts..."), command: "do-appPrefs"},

@@ -68,6 +68,7 @@ helpData.lookup =
 	"hideIconsWhileBrowsing": { title: $L("Hide Icons While Browsing"), data: $L("Hide the navigation icons while browsing web pages. If enabled, the navigation icons will be displayed while a page is loading and remain hidden while you browser. You can bring them up any time by performing a meta-tap on the webpage.<br/><br/>A meta-tap can be performed by pressing one finger in the left of the gesture area and tapping on the screen at the same time.")},
 	"autoRotate": { title: $L("Auto Rotate"), data: $L("Allow the screen to auto-rotate while you are browsing. This feature can be temporarily disabled with the rotate-lock navigation icon.<br/><br/>You can add the rotate lock navigation icon to your navigation menu by opening the \"View Options\" menu item from the main menu.")},
 	"showBookmark": { title: $L("Show Bookmark"), data: $L("A small semi-transparent bookmark can be displayed in the upper left hand corner as you browse sites that you have previously bookmarked. This indicates that the website has already been bookmarked.")},
+    "useDeskmarks": { title: $L("Use Deskmarks"), data: $L("Enabling Deskmarks will allow Deskmarks to be used for primary bookmark integration.")},
     
     
 	"googleEmail": { title: $L("Google Email"), data: $L("This is your Google Email address that you use to log into Google Bookmarks.")},

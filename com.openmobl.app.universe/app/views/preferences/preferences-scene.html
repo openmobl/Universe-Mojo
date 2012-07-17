@@ -172,11 +172,18 @@
                     <div id="autoRotate" x-mojo-element="ToggleButton"></div>
                 </div>
             </div>
-            <div class="palm-row last">
+            <div class="palm-row">
                 <div class="palm-row-wrapper">
                     <div class="help-overlay" id="help-showBookmark"></div>
                     <div class="label left">Show Bookmark</div>
                     <div id="showBookmark" x-mojo-element="ToggleButton"></div>
+                </div>
+            </div>
+            <div class="palm-row last">
+                <div class="palm-row-wrapper">
+                    <div class="help-overlay" id="help-useDeskmarks"></div>
+                    <div class="label left">Use Deskmarks</div>
+                    <div id="useDeskmarks" x-mojo-element="ToggleButton"></div>
                 </div>
             </div>
             
@@ -189,29 +196,44 @@
             <div class="palm-group-title">Google Bookmarks</div>
             <div class="palm-list">
                 
-                <div class="palm-row first">
-                    <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
-                        <div class="help-overlay" id="help-googleEmail"></div>
-                        <div class="title">
-                            <div class="label">Email</div>
-                            <div id="googleEmail" x-mojo-element="TextField"></div>
+                <div id="googleLoginItem">
+                    <div class="palm-row first">
+                        <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
+                            <div class="help-overlay" id="help-googleEmail"></div>
+                            <div class="title">
+                                <div class="label">Email</div>
+                                <div id="googleEmail" x-mojo-element="TextField"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="palm-row">
+                        <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
+                            <div class="help-overlay" id="help-googlePassword"></div>
+                            <div class="title">
+                                <div class="label">Password</div>
+                                <div id="googlePassword" x-mojo-element="PasswordField"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="palm-row last">
+                        <div class="palm-row-wrapper">
+                            <div id="googleLogin" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Login</div>
                         </div>
                     </div>
                 </div>
-                <div class="palm-row last">
-                    <div class="palm-row-wrapper textfield-group" x-mojo-focus-highlight="true">
-                        <div class="help-overlay" id="help-googlePassword"></div>
-                        <div class="title">
-                            <div class="label">Password</div>
-                            <div id="googlePassword" x-mojo-element="PasswordField"></div>
+                
+                <div id="googleLogoutItem">
+                    <div class="palm-row single">
+                        <div class="palm-row-wrapper">
+                            <div id="googleLogout" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Logout</div>
                         </div>
                     </div>
                 </div>
                 
             </div>
         </div>
-        <div id="googleLogin" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Login</div>
-        <div id="googleLogout" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Logout</div>
+        <!--<div id="googleLogin" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Login</div>
+        <div id="googleLogout" class="palm-button" x-mojo-element="Button" x-mojo-tap-highlight="momentary">Google Logout</div>-->
     </div>
     
     <div class="palm-group">

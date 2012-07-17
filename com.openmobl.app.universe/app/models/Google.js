@@ -117,7 +117,7 @@ Google.prototype.finishLogin = function(username, password, callback, fail)
         };
     
     jQuery.ajax({
-            url: "https://www.google.com/accounts/ServiceLoginAuth",
+            url: "https://accounts.google.com/ServiceLoginAuth",
             type: "POST",
             data: params,
             success: (function(data, textStatus, jqXHR) {
@@ -125,6 +125,8 @@ Google.prototype.finishLogin = function(username, password, callback, fail)
                                 fail(Google.UnexpectedStatus, {status: jqXHR.status, wanted: 200});
                             } else {
                                 var cookie = jqXHR.getResponseHeader("Set-Cookie");
+                                
+                                Mojo.Log.info("DATA: " + data);
                                 
                                 if (cookie) {
                                     var sid = UrlUtil.getCookie(cookie, "SID");
@@ -384,7 +386,7 @@ Google.prototype.createOrUpdateBookmark = function(executeUrl, bookmark, callbac
                                 callback(data);
                         }).bind(this),
             error: (function(jqXHR, textStatus, errorThrown) {
-                    Mojo.Log.error("createOrUpdateBookmark failed -- status: " + textStatus + " err: " + errorThrown);
+                    Mojo.Log.error("createOrUpdateBookmark failed -- status:", textStatus, "err:", errorThrown);
                         
                     if (fail)
                         fail(Google.LoginFailed);
@@ -443,12 +445,17 @@ Google.prototype.downloadBookmarkRecurse = function(offset, oldData, callback, f
                             }
                         }).bind(this),
             error: (function(jqXHR, textStatus, errorThrown) {
-                    Mojo.Log.error("downloadBookmarkRecurse failed -- status: " + textStatus + " err: " + errorThrown);
+                    Mojo.Log.error("downloadBookmarkRecurse failed -- status:", textStatus, "err:", errorThrown);
                         
                     if (fail)
                         fail(Google.DownloadFailed);
                 }).bind(this)
         });
+};
+
+Google.prototype.uploadBookmarks = function(data, callback, fail)
+{
+    
 };
 
 Google.prototype.error = function(caller, jqXHR, textStatus, errorThrown)

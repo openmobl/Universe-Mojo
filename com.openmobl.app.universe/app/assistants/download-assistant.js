@@ -31,6 +31,7 @@
     under either the MPL or the GPL License.
  */
 
+/* TODO: This needs to be a user defined preference when we create the new prefs UI */
 DownloadAssistant.kDownloadPath = "/media/internal/Downloads/";
 
 function DownloadAssistant(params)

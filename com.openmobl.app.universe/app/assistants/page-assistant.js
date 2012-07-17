@@ -18,6 +18,7 @@
     Contributor(s):
         OpenMobl Systems
         Donald C. Kirker <donald.kirker@openmobl.com>
+        Nelsun Apps
 
     Alternatively, the contents of this file may be used under the terms
     of the GNU General Public License Version 2 license (the  "GPL"), in
@@ -91,6 +92,7 @@ function PageAssistant(params)
     } else {
         this.loadingURL = undefined;
     }
+    this.errorURL = undefined;
     this.url = undefined;
     this.title = undefined;
     
@@ -169,6 +171,7 @@ function PageAssistant(params)
     this.chromeHidden = false;
     //this.doubleTap = false;
     this.privateBrowsing = false;
+    this.isSpotlight = false;
     
     Universe.getTabManager().setTabController(this.tabID, this);
 }
@@ -179,7 +182,9 @@ PageAssistant.prototype.setup = function()
 	/* this function is for setup tasks that have to happen when the scene is first created */
 		
 	/* Setup templates */
-	this.addressBar = new AddressBar(this.controller, this.openURLHandler, this.reloadHandler, this.stopHandler, this.showChromeIfNeeded.bind(this));
+	this.addressBar = new AddressBar(this.controller, this.openURLHandler,
+                                     this.reloadHandler, this.stopHandler,
+                                     this.showChromeIfNeeded.bind(this));
     this.addressBar.setup();
     
 	/* Widget creation */
@@ -222,6 +227,27 @@ PageAssistant.prototype.setup = function()
     this.webView.addEventListener(Mojo.Event.webViewServerConnect,
     this.webView.addEventListener(Mojo.Event.webViewServerDisconnect,
     */
+    
+    this.setupPageBackground();
+};
+
+
+PageAssistant.prototype.setupPageBackground = function()
+{
+    var mode = (this.controller.window.innerWidth < this.controller.window.innerHeight) ? "portrait" : "landscape";
+    
+    Mojo.Log.info("PageAssistant#setupPageBackground: ", mode);
+    
+    var background = this.controller.get("background");
+    
+    switch (mode) {
+        case "portrait":
+            background.setAttribute("class", "page-background");
+            break;
+        case "landscape":
+            background.setAttribute("class", "page-background-landscape");
+            break;
+    }
 };
 
 PageAssistant.prototype.aboutToActivate = function(callback)
@@ -247,6 +273,7 @@ PageAssistant.prototype.setupWebView = function()
 PageAssistant.prototype.setupRedirects = function()
 {
     /* The call to Mojo.loadJSONFile in webView widget is broken, manually update this... File a bug @ Palm */
+    // TODO: Update the Maps URL
     this.webView.mojo.addUrlRedirect("^http://((www\\.)?google\\.(com|[a-z]{2}|com?\\.[a-z]{2})/maps(/m)?|maps\\.google\\.(com|[a-z]{2}|com?\\.[a-z]{2})(/maps(/m)?)?)(/)?(\\?.*)?$", true, "com.palm.app.maps", 0);
     this.webView.mojo.addUrlRedirect("^[^:]+://www.youtube.com/watch\\?v=", true, "com.palm.app.youtube", 0);
     //this.webView.mojo.addUrlRedirect("^[^:]+://m.youtube.com/watch", true, "com.palm.app.youtube", 0);
@@ -329,6 +356,15 @@ PageAssistant.prototype.finalActivate = function(results)
     Universe.getPrefsManager().addWatcher(this.tabID, this.handlePrefsChanged.bind(this));
 };
 
+PageAssistant.prototype.handleLaunch = function(params)
+{
+    if (params.url) {
+        this.openURL(params.url);
+        this.controller.stageController.popScenesTo(this.controller);
+    }
+};
+
+
 PageAssistant.prototype.activate = function(event)
 {
     Mojo.Log.info("PageAssistant#activate()");
@@ -390,7 +426,7 @@ PageAssistant.prototype.activate = function(event)
     
     /* We received an event from a previous scene. We must act on it. */
     if (event) {
-        Mojo.Log.error("Activating -- event: " + event.type + " action: " + event.action); // SENTINAL FOR ALPHA DEBUGGING
+        Mojo.Log.error("Activating -- event:", event.type, "action:", event.action); // SENTINAL FOR ALPHA DEBUGGING
         
         switch (event.action) {
             case "loadURL":
@@ -402,7 +438,7 @@ PageAssistant.prototype.activate = function(event)
     }
     
     if (event || (this.firstOpen && Universe.getPrefsManager().hasStarted())) {
-        Mojo.Log.error("Loading a url -- event: " + event + ", firstOpen: " + this.firstOpen); // SENTINAL FOR ALPHA DEBUGGING
+        Mojo.Log.error("Loading a url -- event:", event, ", firstOpen:", this.firstOpen); // SENTINAL FOR ALPHA DEBUGGING
         
         this.addressBar.show(true);
         if (this.loadingURL !== undefined) {
@@ -436,6 +472,10 @@ PageAssistant.prototype.deactivate = function(event)
 
 PageAssistant.prototype.cleanup = function(event)
 {
+    if (this.isSpotlight) {
+        this.pluginSpotlightEnd();
+    }
+    
     Universe.getPrefsManager().removeWatcher(this.tabID);
     Universe.getTabManager().closeTab(this.tabID);
     
@@ -481,6 +521,7 @@ PageAssistant.prototype.cleanup = function(event)
 PageAssistant.prototype.orientationChanged = function(event)
 {
     Mojo.Log.info("PageAssistant#orientationChanged");
+    this.setupPageBackground();
     this.addressBar.orientationChanged(event);
 };
 
@@ -546,7 +587,18 @@ PageAssistant.prototype.getSupportedLanguage = function()
 /* TODO: Check the length of the URL? */
 PageAssistant.prototype.openURL = function(url)
 {
-    Mojo.Log.info("PageAssistant#openURL(" + url + ")");
+    this.errorURL = undefined;
+    this.openURLCommon(url);
+}
+
+PageAssistant.prototype.openURLError = function(url)
+{
+    this.openURLCommon(url);
+};
+
+PageAssistant.prototype.openURLCommon = function(url)
+{
+    Mojo.Log.info("PageAssistant#openURL(", url, ")");
     
     this.loadingURL = url;
     var lowerURL = this.loadingURL.toLowerCase();
@@ -586,13 +638,17 @@ PageAssistant.prototype.openURL = function(url)
         
         /* TODO: Localize */
         this.loadingURL = Mojo.appPath + "html/" + this.getSupportedLanguage() + "/" + file;
-        Mojo.Log.info("Found local path for \"" + url + "\": " + this.loadingURL);
+        Mojo.Log.info("Found local path for \"", url, "\": ", this.loadingURL);
     }
     
     this.isEditing = false;
     this.hasEdited = false;
     
-    this.addressBar.setURL(this.loadingURL);
+    if (this.errorURL !== undefined) {
+        this.addressBar.setURL(this.errorURL);
+    } else {
+        this.addressBar.setURL(this.loadingURL);
+    }
     this.addressBar.changeMode("title");
     
     this.webView.mojo.openURL(this.loadingURL);
@@ -643,9 +699,12 @@ PageAssistant.prototype.displayBookmarked = function(results)
 
 PageAssistant.prototype.showProgress = function(progress)
 {
-    var newProgress = progress || 100;
+    var newProgress = progress;
     
-    Mojo.Log.info("PageAssistant#showProgress(" + newProgress + ")");
+    if (newProgress === undefined)
+        return;
+    
+    Mojo.Log.info("PageAssistant#showProgress(", newProgress, ")");
     
     if (newProgress < 100) {
         this.bookmarked.style.display = "none";
@@ -659,8 +718,11 @@ PageAssistant.prototype.showProgress = function(progress)
         }
         
         /* This is a hack to ensure that the page does not "bounce" after loading. */
-        if (!progress)
+        if (!progress) {
             this.showChromeIfNeeded(true);
+         
+            this.isEditing = false;   
+        }
     }
     
     if (this.progressBar.style.display === "none" && this.addressBar.isVisible()) {
@@ -718,14 +780,14 @@ PageAssistant.prototype.saveViewScreen = function()
     
     var viewFileName = "/var/luna/files/universe/" + this.tabID + ".png";
     
-    Mojo.Log.info("Saving view to file: " + viewFileName);
+    Mojo.Log.info("Saving view to file: ", viewFileName);
     
     try {
         this.webView.mojo.saveViewToFile(viewFileName);
-        /* Compact to save precious space*/
-        this.webView.mojo.resizeImage(viewFileName, viewFileName, 50, 75);
+        /* Compact to save precious space */
+        this.webView.mojo.resizeImage(viewFileName, viewFileName, 100, 150);
     } catch (e) {
-        Mojo.Log.error("Could not save view to file. Exception: " + e);
+        Mojo.Log.error("Could not save view to file. Exception: ", e);
     }
 };
 
@@ -735,7 +797,7 @@ PageAssistant.prototype.deleteView = function()
     try {
         this.webView.mojo.deleteImage(viewFileName);
     } catch (e) {
-        Mojo.Log.error("Could not delete view. Exception: " + e);
+        Mojo.Log.error("Could not delete view. Exception: ", e);
     }
     
 };
@@ -763,13 +825,15 @@ PageAssistant.prototype.onLoadProgress = function(event) // progress
         var internalURL = Mojo.appPath + "html/";
         
         if (!Utils.toBool(Universe.getPrefsManager().get("privateBrowsing"))) { // TODO: Do not add internal pages to the History
-            Universe.getHistoryManager().addToHistory(this.url, this.title);
+            if (this.errorURL === undefined) {
+                Universe.getHistoryManager().addToHistory(this.url, this.title);
+            }
         }
     }
 };
 PageAssistant.prototype.updateHistory = function(event) // url, reload
 {
-    Mojo.Log.info("PageAssistant#updateHistory(" + event.url + ")");
+    Mojo.Log.info("PageAssistant#updateHistory(", event.url, ")");
     
     /* This updates way too later for my taste, so, instead just call on progress == 100% */
     /*var internalURL = Mojo.appPath + "html/";
@@ -794,7 +858,7 @@ PageAssistant.prototype.onDownloadFinished = function(event) // url, mimeType, t
 };
 PageAssistant.prototype.onLinkClicked = function(event) // url
 {
-    Mojo.Log.info("PageAssistant#onLinkClicked(" + event.url + ")");
+    Mojo.Log.info("PageAssistant#onLinkClicked(", event.url, ")");
     this.openURL(event.url);
 };
 PageAssistant.prototype.onTitleURLChanged = function(event) // title, url, canGoBack, canGoForward
@@ -808,9 +872,14 @@ PageAssistant.prototype.onTitleURLChanged = function(event) // title, url, canGo
     this.menuAssistant.setForward(this.wvCanGoForward);
     
     this.addressBar.setTitle(this.title);
-    this.addressBar.setURL(this.url);
+    if (this.errorURL !== undefined) {
+        this.addressBar.setURL(this.errorURL);
+    } else {
+        this.addressBar.setURL(this.url);
+    }
     
     Universe.getTabManager().setTabTitle(this.tabID, this.title);
+    Universe.getTabManager().setTabURL(this.tabID, this.url);
 };
 PageAssistant.prototype.onTitleChanged = function(event) // title
 {
@@ -828,7 +897,13 @@ PageAssistant.prototype.onURLChanged = function(event) // url, canGoBack, canGoF
     this.wvCanGoForward = event.canGoForward;
     this.menuAssistant.setForward(this.wvCanGoForward);
     
-    this.addressBar.setURL(this.url);
+    if (this.errorURL !== undefined) {
+        this.addressBar.setURL(this.errorURL);
+    } else {
+        this.addressBar.setURL(this.url);
+    }
+    
+    Universe.getTabManager().setTabURL(this.tabID, this.url);
 };
 PageAssistant.prototype.onCreatePage = function(event) // pageIdentifier
 {
@@ -852,7 +927,7 @@ PageAssistant.prototype.onTapRejected = function()
 };
 PageAssistant.prototype.onViewEditorFocused = function(event) // focused
 {
-    Mojo.Log.info("PageAssistant#onViewEditorFocused(" + event.focused + ")");
+    Mojo.Log.info("PageAssistant#onViewEditorFocused(", event.focused, ")");
     this.isEditing = event.focused;
     
     if (this.isEditing) {
@@ -861,7 +936,7 @@ PageAssistant.prototype.onViewEditorFocused = function(event) // focused
 };
 PageAssistant.prototype.onUrlRedirect = function(event) // url, appId
 {
-    Mojo.Log.info("PageAssistant#onUrlRedirect(" + event.url + ")");
+    Mojo.Log.info("PageAssistant#onUrlRedirect(", event.url, ")");
     //this.openURL(event.url);
     // We are being told that there is a system redirect, so let's redirect to it.
     var url = event.url || "";
@@ -875,13 +950,13 @@ PageAssistant.prototype.onUrlRedirect = function(event) // url, appId
 };
 PageAssistant.prototype.downloadFile = function(event) // url, mimeType
 {
-    Mojo.Log.info("PageAssistant#downloadFile(" + event.url + ", " + event.mimeType + ")");
+    Mojo.Log.info("PageAssistant#downloadFile(", event.url, ",", event.mimeType, ")");
     
     Universe.launchDownloads({url: event.url, mimeType: event.mimeType});
 };
 PageAssistant.prototype.mimeNotSupported = function(event) // url, mimeType
 {
-    Mojo.Log.info("PageAssistant#mimeNotSupported(" + event.url + ")");
+    Mojo.Log.info("PageAssistant#mimeNotSupported(", event.url, ")");
     
     var url = event.url; // UrlUtil.decode(event.url);
     
@@ -1044,13 +1119,13 @@ PageAssistant.prototype.holdEvent = function(event)
         
         this.webView.mojo.getImageInfoAtPoint(point.left, point.top, inspectImage.bind(this));
     } catch (e) {
-        Mojo.Log.error("PageAssistant#holdEvent(" + e + ")");
+        Mojo.Log.error("PageAssistant#holdEvent(", e, ")");
     }
 };
 
 PageAssistant.prototype.onSingleTap = function(event)
 {
-    Mojo.Log.info("PageAssistant#onSingleTap - meta: " + event.metaKey);
+    Mojo.Log.info("PageAssistant#onSingleTap - meta:", event.metaKey);
 
     if (event && Utils.eventHasMetaKey(event)) { // TODO: This is broken in 2.1.0.
         if (Utils.toBool(Universe.getPrefsManager().get("hideIconsWhileBrowsing"))) {
@@ -1072,33 +1147,43 @@ PageAssistant.prototype.onFirstPaint = function()
 
 PageAssistant.prototype.documentLoadError = function(event) // domain, errorCode, failingURL, message
 {
-    Mojo.Log.info("PageAssistant#documentLoadError(" + event.errorCode + ")");
+    Mojo.Log.info("PageAssistant#documentLoadError(", event.errorCode, ",", event.failingURL, ")");
+    
+    this.errorURL = event.failingURL; // We need to mask out the about page URL
+    
+    var loadURL = undefined;
     
     switch (event.errorCode) {
         case PageAssistant.errorCodes.ERR_USER_CANCELED:
             return;
+            
         case PageAssistant.errorCodes.HTTP_NOT_FOUND:
-            this.openURL("about:notfound");
-            return;
+            loadURL = "about:notfound";
+            break;
         case PageAssistant.errorCodes.HTTP_DENIED:
         case PageAssistant.errorCodes.CURLE_REMOTE_ACCESS_DENIED:
         case PageAssistant.errorCodes.CURLE_LOGIN_DENIED:
-            this.openURL("about:notfound");
-            return;
+            loadURL = "about:notfound";
+            break;
         case PageAssistant.errorCodes.ERR_NO_INTERNET_CONNECTION:
-            this.openURL("about:nointernet");
-            return;
+            loadURL = "about:nointernet";
+            break;
         case PageAssistant.errorCodes.CURLE_COULDNT_RESOLVE_HOST:
-            this.openURL("about:nohost");
-            return;
+            loadURL = "about:nohost";
+            break;
         case PageAssistant.errorCodes.CURLE_TOO_MANY_REDIRECTS:
-            this.openURL("about:redirects");
-            return;
+            loadURL = "about:redirects";
+            break;
         case PageAssistant.errorCodes.CURLE_OPERATION_TIMEDOUT:
-            this.openURL("about:timeout");
-            return;
+            loadURL = "about:timeout";
+            break;
         default:
             break;
+    }
+    
+    if (loadURL !== undefined) {
+        this.openURLError(loadURL);
+        return;
     }
     
     this.controller.showDialog({
@@ -1111,11 +1196,21 @@ PageAssistant.prototype.documentLoadError = function(event) // domain, errorCode
 };
 PageAssistant.prototype.pluginSpotlightStart = function()
 {
+    Mojo.Log.info("Spotlight started");
+    // TODO: Create a button to exit Spotlight mode
     this.isSpotlight = true;
+    if (this.controller.stageController) {
+        this.controller.stageController.setWindowProperties({blockScreenTimeout: true});
+    }
 };
 PageAssistant.prototype.pluginSpotlightEnd = function()
 {
+    Mojo.Log.info("Spotlight stopped");
+    // TODO: Create a button to exit Spotlight mode
     this.isSpotlight = false;
+    if (this.controller.stageController) {
+        this.controller.stageController.setWindowProperties({blockScreenTimeout: false});
+    }
 };
 
 PageAssistant.prototype.keyDown = function(event)
@@ -1126,9 +1221,10 @@ PageAssistant.prototype.keyDown = function(event)
         return;
     }
     
-    if (!this.isLoading() && !this.isEditing &&
-        !this.addressBar.hasFocus() && this.addressBar.isValidInput(c)) {
-        Mojo.Log.info("PageAssistant#keyDown(" + c + ")");
+    if (!this.isLoading() &&
+        !this.addressBar.hasFocus() && this.addressBar.isValidInput(c) &&
+        !this.isEditing) {
+        Mojo.Log.info("PageAssistant#keyDown(", c, ")");
         event.preventDefault();
         event.stopPropagation();
         this.startEnteringURL();//c);
@@ -1140,9 +1236,10 @@ PageAssistant.prototype.keyUp = function(event)
 {
     var c = String.fromCharCode(event.originalEvent.keyCode);
     
-    if (!this.isLoading() && !this.isEditing &&
-        !this.addressBar.hasFocus() && this.addressBar.isValidInput(c)) {
-        Mojo.Log.info("PageAssistant#keyDown(" + c + ")");
+    if (!this.isLoading() &&
+        !this.addressBar.hasFocus() && this.addressBar.isValidInput(c) &&
+        !this.isEditing) {
+        Mojo.Log.info("PageAssistant#keyDown(", c, ")");
         event.preventDefault();
         event.stopPropagation();
         this.startEnteringURL();//c);
@@ -1153,7 +1250,7 @@ PageAssistant.prototype.keyUp = function(event)
 PageAssistant.prototype.chromeShow = function(show)
 {
     var showIt = show; // || true;
-    Mojo.Log.info("PageAssistant#chromeShow(" + showIt + ")");
+    Mojo.Log.info("PageAssistant#chromeShow(", showIt, ")");
     
     this.chromeHidden = !showIt;
     this.controller.setMenuVisible(Mojo.Menu.commandMenu, showIt);
@@ -1161,7 +1258,7 @@ PageAssistant.prototype.chromeShow = function(show)
 
 PageAssistant.prototype.showChromeIfNeeded = function(show)
 {
-    Mojo.Log.info("PageAssistant#showChromeIfNeeded(" + show + ")");
+    Mojo.Log.info("PageAssistant#showChromeIfNeeded(", show, ")");
     
     if (Utils.toBool(Universe.getPrefsManager().get("hideIconsWhileBrowsing"))) {
         if (show) {
@@ -1282,7 +1379,7 @@ PageAssistant.prototype.clearCache = function()
     try {
         this.webView.mojo.clearCache();
     } catch (e) {
-        Mojo.Log.error("PageAssistant#clearCache - e: " + e);
+        Mojo.Log.error("PageAssistant#clearCache - e: ", e);
     }
 };
 PageAssistant.prototype.clearCookies = function()
@@ -1290,7 +1387,7 @@ PageAssistant.prototype.clearCookies = function()
     try {
         this.webView.mojo.clearCookies();
     } catch (e) {
-        Mojo.Log.error("PageAssistant#clearCookies - e: " + e);
+        Mojo.Log.error("PageAssistant#clearCookies - e: ", e);
     }
 };
 PageAssistant.prototype.clearHistory = function()
@@ -1298,7 +1395,7 @@ PageAssistant.prototype.clearHistory = function()
     try {
         this.webView.mojo.clearHistory();
     } catch (e) {
-        Mojo.Log.error("PageAssistant#clearHistory - e: " + e);
+        Mojo.Log.error("PageAssistant#clearHistory - e: ", e);
     }
 };
 
@@ -1317,7 +1414,7 @@ PageAssistant.prototype.dialWithVoogle = function(url)
     var newURL = Utils.normalizeNumber(url);
     var params = { action: "dial", number: newURL };
     
-    Mojo.Log.info("Dialing with Voogle: " + newURL);
+    Mojo.Log.info("Dialing with Voogle: ", newURL);
     
     Utils.subLaunchWithInstall(this.controller, "com.kandutech.voogle", "Voogle", "the webOS Google Voice client", params);
 };
@@ -1396,6 +1493,12 @@ PageAssistant.prototype.shareWithEmail = function()
     Utils.subLaunchWithInstall(this.controller, "com.palm.app.email", "Email", "the email client", params);
 };
 
+PageAssistant.prototype.shareByBroadcast = function()
+{
+    Universe.getCrossAppManager().deskmarks.broadcastURL(this.controller.stageController,
+        this.addressBar.getURL(), this.addressBar.getTitle());
+};
+
 PageAssistant.prototype.addToLauncher = function(title, url)
 {
     this.controller.showDialog({
@@ -1407,23 +1510,32 @@ PageAssistant.prototype.addToLauncher = function(title, url)
 
 PageAssistant.prototype.addBookmark = function(title, url)
 {
-    this.controller.showDialog({
-            template: "bookmarks/bookmarks-add-dialog",
-            assistant: new AddBookmarkAssistant(this, -1, title, url, $L("Unfiled"), this.addBookmarkCallback.bind(this), true),
-            mode: AddBookmarkAssistant.addBookmark
-        });
+    if (Utils.toBool(Universe.getPrefsManager().get("useDeskmarks"))) {
+        Universe.getCrossAppManager().deskmarks.bookmarkAdd(this.controller.stageController, {
+                id: -1,
+                title: title,
+                url: url,
+                folder: $L("Unfiled")
+            });
+    } else {
+        this.controller.showDialog({
+                template: "bookmarks/bookmarks-add-dialog",
+                assistant: new AddBookmarkAssistant(this, -1, title, url, $L("Unfiled"), this.addBookmarkCallback.bind(this), true),
+                mode: AddBookmarkAssistant.addBookmark
+            });
+    }
 };
 
 PageAssistant.prototype.addBookmarkCallback = function(id, title, url, desc, folder)
 {
-    Mojo.Log.info("PageAssistant#addBookmarkCallback(" + title + "," + url + ")");
+    Mojo.Log.info("PageAssistant#addBookmarkCallback(", title, ",", url, ")");
     
     Universe.getBookmarksManager().addBookmark(url, title, desc, folder);
 };
 
 PageAssistant.prototype.addToLauncherCallback = function(id, title, url, desc, folder)
 {
-    Mojo.Log.info("PageAssistant#addToLauncherCallback(" + title + "," + url + ")");
+    Mojo.Log.info("PageAssistant#addToLauncherCallback(", title, ",", url, ")");
 
     var addTitle = title || $L("Web page");
     var params = {
@@ -1457,7 +1569,7 @@ PageAssistant.prototype.handleCommand = function(event)
 {
     var handled = false;
     
-    Mojo.Log.info("PageAssistant#handleCommand(" + event.type + "," + event.command + ")");
+    Mojo.Log.info("PageAssistant#handleCommand(", event.type, ",", event.command, ")");
     
     if (!this.addressBar.handleCommand(event)) {
         if (event.type == Mojo.Event.back) {
@@ -1508,6 +1620,10 @@ PageAssistant.prototype.handleCommand = function(event)
                     Universe.launchFilePicker(this);
                     handled = true;
                     break;
+                case "do-appOpenNetwork":
+                    Universe.getCrossAppManager().deskmarks.broadcastURLCatch(this.controller.stageController);
+                    handled = true;
+                    break;
                 case "do-appPrefs":
                     Universe.launchPreferences();
                     handled = true;
@@ -1549,20 +1665,28 @@ PageAssistant.prototype.handleCommand = function(event)
                             case "email":
                                 this.shareWithEmail();
                                 break;
+                            case "broadcast":
+                                this.shareByBroadcast();
+                                break;
                             default:
                                 break;
                         }                                           
                     };
                     
+                    var choiceList = [];
+                    
+                    choiceList.push({ label: $L("SMS"), value: "sms" });
+                    choiceList.push({ label: $L("Email"), value: "email" });
+                    if (Mojo.Environment.DeviceInfo.platformVersionMajor >= 2) {
+                        choiceList.push({ label: $L("Air2Share"), value: "broadcast" });
+                    }
+                    choiceList.push({ label: $L("Cancel"), type: "dismiss", value: "cancel" });
+                    
                     this.controller.showAlertDialog({
                             title: $L("Share"),
                             message: $L("Share the current web page"),
                             onChoose: shareChoice.bind(this),
-                            choices: [
-                                { label: $L("SMS"), value: "sms" },
-                                { label: $L("Email"), value: "email" },
-                                { label: $L("Cancel"), type: "dismiss", value: "cancel" }
-                            ]
+                            choices: choiceList
                         });
                     break;
                 case MenuAssistant.Tweet.command:
@@ -1612,7 +1736,11 @@ PageAssistant.prototype.handleCommand = function(event)
                     handled = true;
                     break;
                 case MenuAssistant.Bookmarks.menu.command:
-                    this.controller.stageController.pushScene(Universe.bookmarksSceneName, {});
+                    if (Utils.toBool(Universe.getPrefsManager().get("useDeskmarks"))) {
+                        Universe.getCrossAppManager().deskmarks.showBookmarks(this.controller.stageController);
+                    } else {
+                        this.controller.stageController.pushScene(Universe.bookmarksSceneName, {});
+                    }
                     handled = true;
                     break;
                 case MenuAssistant.History.menu.command:
@@ -1629,6 +1757,10 @@ PageAssistant.prototype.handleCommand = function(event)
                     break;
                 case MenuAssistant.TopSitesMenu.command:
                     this.controller.stageController.pushScene(Universe.topSitesSceneName, {});
+                    handled = true;
+                    break;
+                case MenuAssistant.TabsMenu.command:
+                    this.controller.stageController.pushScene(Universe.tabsSceneName, {});
                     handled = true;
                     break;
                 case MenuAssistant.OrientationLock.menu.command:

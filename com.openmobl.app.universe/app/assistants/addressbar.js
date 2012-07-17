@@ -194,6 +194,8 @@ AddressBar.prototype.setURL = function(url)
 {
     url = url || "";
     
+    Mojo.Log.info("AddressBar#setURL(", url, ")");
+    
     this.controls.input.model.url = url;
     this.controller.modelChanged(this.controls.input.model);
     
@@ -220,7 +222,7 @@ AddressBar.prototype.setShouldHide = function(shouldHide)
 
 AddressBar.prototype.isVisible = function()
 {
-    Mojo.Log.info("AddressBar#isVisible = " + this.barMode.model.visible);
+    Mojo.Log.info("AddressBar#isVisible = ", this.barMode.model.visible);
     return this.barMode.model.visible;
 };
 
@@ -258,7 +260,7 @@ AddressBar.prototype.show = function(visible)
 {
     var isVisible = visible; // || true;
     
-    Mojo.Log.info("AddressBar#show(" + isVisible + ")");
+    Mojo.Log.info("AddressBar#show(", isVisible, ")");
     
     // We're not calling modelChanged here to avoid a bug with flickering
     
@@ -322,7 +324,7 @@ AddressBar.prototype.setFocus = function()
 
 AddressBar.prototype.startActivity = function(input)
 {
-    Mojo.Log.info("AddressBar#startActivity(" + input + ")");
+    Mojo.Log.info("AddressBar#startActivity(", input, ")");
     if (!this.isVisible()) {
         this.show(true);
         this.showChromeCallback(true);
@@ -439,7 +441,7 @@ AddressBar.prototype.updateModel = function()
     var mode = this.getMode();
     var newVal = this.controller.window.innerWidth - 50;
     
-    Mojo.Log.info("AddressBar#updateModel -- newVal=" + newVal);
+    Mojo.Log.info("AddressBar#updateModel -- newVal=", newVal);
     
     this.barMode.model.items[0].items[0].width = newVal;
 };
@@ -463,7 +465,7 @@ AddressBar.prototype.changeMode = function(mode, state)
     this.barMode.mode = newMode;
     this.barMode.state = newState;
 
-    Mojo.Log.info("AddressBar#changeMode(" + mode + "," + state + ")");
+    Mojo.Log.info("AddressBar#changeMode(", mode, ",", state, ")");
     
     switch (mode) {
         case "url":
@@ -548,8 +550,8 @@ AddressBar.prototype.onFlick = function(event)
 
 AddressBar.prototype.loadOrSearch = function()
 {
-    // So far we support http, https, file, about, and scheme-less URLs that meet the regex below
-    var regex = /^https?:|^file:|^about:|^[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\S*)?$/;
+    // So far we support http, https, file, about, and scheme-less URLs and IP addresses that meet the regex below
+    var regex = /^https?:|^file:|^about:|^[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\S*)?$|^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
     
     if (!this.getURL().match(regex)) {
         this.search(this.getURL());
@@ -585,7 +587,7 @@ AddressBar.prototype.handleCommand = function(event)
 {
     var handled = false;
     
-    Mojo.Log.info("AddressBar#handleCommand(" + event.type + "," + event.command + ")");
+    Mojo.Log.info("AddressBar#handleCommand(", event.type, ",", event.command, ")");
 
     if (event.type == Mojo.Event.command) {
         switch (event.command) {

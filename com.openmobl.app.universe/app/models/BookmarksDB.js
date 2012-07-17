@@ -18,6 +18,7 @@
     Contributor(s):
         OpenMobl Systems
         Donald C. Kirker <donald.kirker@openmobl.com>
+        Nelsun Apps
 
     Alternatively, the contents of this file may be used under the terms
     of the GNU General Public License Version 2 license (the  "GPL"), in
@@ -48,19 +49,8 @@ function BookmarksDB() {
         }
         
         this.create();
-        /* TOD: Support categories */
-        /*sqlCreate = "CREATE TABLE IF NOT EXISTS '" + BookmarksDB.folderTableName + "' " + 
-                    "(url TEXT NOT NULL, title TEXT NOT NULL, desc TEXT NOT NULL, folder TEXT NOT NULL, " +
-                    "hitCount INTEGER DEFAULT 0, date TIMESTAMP)";
-        this.db.transaction((function (transaction) {
-                    transaction.executeSql(sqlCreate,
-                    [],
-                    function() { Mojo.Log.info("BookmarksDB#init - main created"); },
-                    this.errorHandler
-                );
-            }).bind(this));*/
     } catch (e) {
-        Mojo.Log.error("BookmarksDB#init - Could not load database. Exception: " + e);
+        Mojo.Log.error("BookmarksDB#init - Could not load database. Exception:", e);
         return false;
     }
     
@@ -76,11 +66,27 @@ BookmarksDB.prototype.create = function(callback)
                 transaction.executeSql(sqlCreate,
                 [],
                 function() {
-                        Mojo.Log.info("BookmarksDB#init - main created"); 
+                        Mojo.Log.info("BookmarksDB#init - main created");
+                        this.amend(callback);
+                    }.bind(this),
+                this.errorHandler.bind(this, "create")
+            );
+        }).bind(this));
+};
+
+/* This is what we use to upgrade older versions of the database */
+BookmarksDB.prototype.amend = function(callback)
+{
+    var sqlAmend = "ALTER TABLE '" + BookmarksDB.tableName + "' ADD googleID TEXT";
+    this.db.transaction((function (transaction) {
+                transaction.executeSql(sqlAmend,
+                [],
+                function() {
+                        Mojo.Log.info("BookmarksDB#amend");
                         if (callback)
                             callback();
                     },
-                this.errorHandler
+                this.errorHandler.bind(this, "amend")
             );
         }).bind(this));
 };
@@ -266,6 +272,34 @@ BookmarksDB.prototype.syncUpdateGoogle = function(googleID, url, title, desc, fo
     }).bind(this));
 };
 
+BookmarksDB.prototype.syncUploadGoogle = function(callback)
+{
+    Mojo.Log.info("BookmarksDB#syncUploadGoogle");
+    var sqlSelect =  "SELECT id, url, title, hitCount, date FROM '" + BookmarksDB.tableName + "' WHERE googleID=?";
+
+    this.db.transaction((function (transaction) {
+        transaction.executeSql(sqlSelect,
+        [""], 
+        function(transaction, resultSet) {
+            var results = {};
+            
+            try {
+                if (resultSet.rows) {
+                    results = Object.clone(resultSet.rows.item(0));
+                }
+            } catch (e) {
+            
+            }
+
+            Mojo.Log.info("BookmarksDB#syncUploadGoogle - resutls: %j", results);
+            
+            if (callback)
+                callback(results);
+        },
+        this.errorHandler.bind(this, "syncUploadGoogle"));
+    }).bind(this));
+};
+
 BookmarksDB.prototype.getByURL = function(url, callback)
 {
     Mojo.Log.info("BookmarksDB#getByURL");
@@ -354,12 +388,33 @@ BookmarksDB.prototype.remove = function(id, callback)
         transaction.executeSql(sqlDelete,
             [id], 
             function (transaction, resultSet) {
-                Mojo.Log.info("BookmarksDB#delete - deleted");
+                Mojo.Log.info("BookmarksDB#remove - deleted");
                 if (callback)
                     callback();
             },
             function(transaction, error) {
                 this.errorHandler("remove", transaction, error);
+                if (callback)
+                    callback(transaction, error);
+            });
+    }).bind(this));
+};
+
+BookmarksDB.prototype.removeByURLAndFolder = function(url, folder, callback)
+{
+    Mojo.Log.info("BookmarksDB#removeByURLAndFolder");
+    var sqlDelete = "DELETE FROM '" + BookmarksDB.tableName + "' WHERE (url=?) AND (folder=?)";
+
+    this.db.transaction((function (transaction) {
+        transaction.executeSql(sqlDelete,
+            [url,folder],
+            function (transaction, resultSet) {
+                Mojo.Log.info("BookmarksDB#removeByURLAndFolder - deleted");
+                if (callback)
+                    callback(transaction, resultSet);
+            },
+            function(transaction, error) {
+                this.errorHandler(transaction, error);
                 if (callback)
                     callback(transaction, error);
             });
@@ -375,7 +430,7 @@ BookmarksDB.prototype.removeFolder = function(folder, callback)
         transaction.executeSql(sqlDelete,
             [folder], 
             function (transaction, resultSet) {
-                Mojo.Log.info("BookmarksDB#delete - deleted");
+                Mojo.Log.info("BookmarksDB#removeFolder - deleted");
                 if (callback)
                     callback();
             },
@@ -407,5 +462,5 @@ BookmarksDB.prototype.clear = function(callback)
 
 BookmarksDB.prototype.errorHandler = function(caller, transaction, error)
 {
-    Mojo.Log.error("BookmarksDB#errorHandler from: " + caller + " - (" + error.code + ") : " + error.message);
+    Mojo.Log.error("BookmarksDB#errorHandler from:", caller, "- (", error.code, ") :", error.message);
 };

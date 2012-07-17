@@ -312,7 +312,11 @@ BookmarksAssistant.prototype.syncBookmarks = function()
             Mojo.Log.info("BookmarksAssistant#start");
             
             var bannerMessage = $L("Starting Bookmark Sync");
-            Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
+            Mojo.Controller.getAppController().showBanner({
+                    messageText: bannerMessage,
+                    icon: "images/notification-small-sync.png"
+                },
+                {source: "notification"}, "Universe");
         };
     var progress = function() {
             //this.updateScene();
@@ -321,7 +325,10 @@ BookmarksAssistant.prototype.syncBookmarks = function()
             Mojo.Log.info("BookmarksAssistant#finish - " + msg);
             
             var bannerMessage = $L("Sync Complete! Loading bookmarks...");
-            Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
+            Mojo.Controller.getAppController().showBanner({
+                    messageText: bannerMessage, 
+                    icon: "images/notification-small-sync.png"
+                }, {source: "notification"}, "Universe");
             
             this.updateScene();
         };
@@ -329,7 +336,11 @@ BookmarksAssistant.prototype.syncBookmarks = function()
             Mojo.Log.info("BookmarksAssistant#fail - " + msg);
             
             var bannerMessage = $L("Failed to sync bookmarks");
-            Mojo.Controller.getAppController().showBanner({messageText: bannerMessage, icon: "images/notification-small-sync.png"}, {source: "notification"}, "Universe");
+            Mojo.Controller.getAppController().showBanner({
+                    messageText: bannerMessage,
+                    icon: "images/notification-small-sync.png"
+                },
+                {source: "notification"}, "Universe");
         };
     Universe.getBookmarksManager().syncBookmarks(start.bind(this), progress.bind(this), finish.bind(this), fail.bind(this));
 };

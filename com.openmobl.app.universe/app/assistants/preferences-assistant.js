@@ -116,6 +116,7 @@ PreferencesAssistant.prototype.setup = function()
         this.setupToggle("hideIconsWhileBrowsing", Utils.toBool(prefs.get("hideIconsWhileBrowsing")));
         this.setupToggle("autoRotate", Utils.toBool(prefs.get("autoRotate")));
         this.setupToggle("showBookmark", Utils.toBool(prefs.get("showBookmark")));
+        this.setupToggle("useDeskmarks", Utils.toBool(prefs.get("useDeskmarks")));
         
         this.setupToggle("enableMetrix", Utils.toBool(prefs.get("enableMetrix")));
         
@@ -130,7 +131,7 @@ PreferencesAssistant.prototype.setup = function()
         
         this.setupGoogle();
     } catch (e) {
-        Mojo.Log.info("E: " + e);
+        Mojo.Log.info("E: ", e);
     }
 };
 
@@ -155,6 +156,7 @@ PreferencesAssistant.prototype.cleanup = function()
     this.destroyToggle("hideIconsWhileBrowsing");
     this.destroyToggle("autoRotate");
     this.destroyToggle("showBookmark");
+    this.destroyToggle("useDeskmarks");
     
     this.destroyToggle("enableMetrix");
     
@@ -290,7 +292,7 @@ PreferencesAssistant.prototype.destroyTextField = function(name)
 
 PreferencesAssistant.prototype.setupList = function(name, value, data, displayLabel)
 {
-    Mojo.Log.info("PreferencesAssistant#setupList - name: " + name + " value: " + value);
+    Mojo.Log.info("PreferencesAssistant#setupList - name: ", name, " value: ", value);
     var attributes = {
             label: displayLabel,
             choices: data,
@@ -309,6 +311,16 @@ PreferencesAssistant.prototype.destroyList = function(name)
     this.controller.stopListening(name, Mojo.Event.propertyChange, this.listChangedHandler);
 };
 
+PreferencesAssistant.prototype.updateGoogleDisplay = function(useGoogle)
+{
+    if (useGoogle) {
+        this.controller.get("googleLoginItem").style.display = "none";
+        this.controller.get("googleLogoutItem").style.display = "block";
+    } else {
+        this.controller.get("googleLoginItem").style.display = "block";
+        this.controller.get("googleLogoutItem").style.display = "none";
+    }
+};
 PreferencesAssistant.prototype.saveLoginData = function(sid, lsid, hsid, ssid, galx, response)
 {
     var nduid;
@@ -325,7 +337,9 @@ PreferencesAssistant.prototype.saveLoginData = function(sid, lsid, hsid, ssid, g
     prefs.set("googleHSID", Mojo.Model.encrypt(nduid, hsid));
     prefs.set("googleSSID", Mojo.Model.encrypt(nduid, ssid));
     
-    this.google.getXT(this.googleFinalSave.bind(this, nduid), function(){});
+    this.google.getXT(this.googleFinalSave.bind(this, nduid), function(){}); // TODO: Generate an error if this fails!
+    
+    this.updateGoogleDisplay(true);
 };
 
 PreferencesAssistant.prototype.googleFinalSave = function(nduid)
@@ -366,7 +380,7 @@ PreferencesAssistant.prototype.googleLogin = function()
                 this.controller.get("googlePassword").mojo.setValue("");
             }).bind(this),
         (function(error, params) {
-                Mojo.Log.info("Login failed: " + error + " results: " + Object.toJSON(params));
+                Mojo.Log.info("Login failed: ", error, " results: ", Object.toJSON(params));
                 
                 var errorStr = $L("We could not log you into your Google Bookmarks. Please check your email address and password and try again.");
                 
@@ -397,6 +411,8 @@ PreferencesAssistant.prototype.googleLogout = function()
     prefs.set("googleHSID", "0000");
     prefs.set("googleSSID", "0000");
     prefs.set("googleXT", "0000");
+    
+    this.updateGoogleDisplay(false);
 };
 PreferencesAssistant.prototype.setupGoogle = function()
 {
@@ -428,6 +444,8 @@ PreferencesAssistant.prototype.setupGoogle = function()
     
     this.controller.listen("googleLogin", Mojo.Event.tap, this.googleLoginHandler);
     this.controller.listen("googleLogout", Mojo.Event.tap, this.googleLogoutHandler);
+    
+    this.updateGoogleDisplay(Utils.toBool(Universe.getPrefsManager().get("useGoogle")));
 };
 PreferencesAssistant.prototype.destroyGoogle = function()
 {
