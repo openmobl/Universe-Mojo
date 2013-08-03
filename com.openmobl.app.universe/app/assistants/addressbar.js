@@ -89,7 +89,7 @@ AddressBar.Commands =
         mask: "none"
     }
 };
-AddressBar.hintText = "Enter a URL or Search Term";
+AddressBar.hintText = $L("Enter a URL or Search Term");
 AddressBar.defaultTitle = "";
 
 AddressBar.Modes =
@@ -144,7 +144,7 @@ AddressBar.prototype.setup = function()
     };
     
     this.controller.setupWidget(Mojo.Menu.viewMenu,
-        {menuClass: "no-fade"}, this.barMode.model);
+        {menuClass: "no-fade", spacerHeight: 0}, this.barMode.model);
         
     //this.controller.watchModel(this.barMode.model, this, this.modelUpdated.bind(this))
         
