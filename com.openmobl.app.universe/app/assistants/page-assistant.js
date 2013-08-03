@@ -85,6 +85,23 @@ PageAssistant.errorCodes = {
 
 };
 
+PageAssistant.aboutTranslate = {
+    "about": {
+        "blank": { file: "blank.html" },
+        "browser": { file: "browser.html" },
+        "home": { file: "home.html" },
+        "poem": { file: "poem.html" },
+        "license": { file: "license.html" },
+        "plugins": { file: "plugins.html" },
+        "notfound": { file: "errors/notfound.html" },
+        "nointernet": { file: "errors/nointernet.html" },
+        "nohost": { file: "errors/nohost.html" },
+        "accessdenied": { file: "errors/accessdenied.html" },
+        "redirects": { file: "errors/redirects.html" },
+        "timeout": { file: "errors/timeout.html" }
+    }
+};
+
 function PageAssistant(params)
 {
     if (params.url) {
@@ -605,36 +622,12 @@ PageAssistant.prototype.openURLCommon = function(url)
     
     if (lowerURL.indexOf("about") === 0) {
         var file = "browser.html";
+        var parts = lowerURL.split(":");
+        var path = parts[1];
         
-        /* This should be cleaned up. Maybe a lookup table. We could also chop the
-           "host" part of the URL and use that for the file path, but we want
-           anything that is not valid to go to "about:browser" and not "about:notfound".
-         */
-        if (lowerURL === "about:blank") {
-            file = "blank.html";
-        } else if (lowerURL === "about:browser") {
-            file = "browser.html";
-        } else if (lowerURL === "about:home") {
-            file = "home.html";
-        } else if (lowerURL === "about:poem") {
-            file = "poem.html";
-        } else if (lowerURL === "about:license") {
-            file = "license.html";
-        } else if (lowerURL === "about:plugins") {
-            file = "plugins.html";
-        } else if (lowerURL === "about:notfound") {
-            file = "errors/notfound.html";
-        } else if (lowerURL === "about:nointernet") {
-            file = "errors/nointernet.html";
-        } else if (lowerURL === "about:nohost") {
-            file = "errors/nohost.html";
-        } else if (lowerURL === "about:accessdenied") {
-            file = "errors/accessdenied.html";
-        } else if (lowerURL === "about:redirects") {
-            file = "errors/redirects.html";
-        } else if (lowerURL === "about:timeout") {
-            file = "errors/timeout.html";
-        }
+        if (PageAssistant.aboutTranslate["about"] !== undefined &&
+            PageAssistant.aboutTranslate["about"][path] !== undefined)
+            file = PageAssistant.aboutTranslate["about"][path].file;
         
         /* TODO: Localize */
         this.loadingURL = Mojo.appPath + "html/" + this.getSupportedLanguage() + "/" + file;
