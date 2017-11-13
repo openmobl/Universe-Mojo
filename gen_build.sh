@@ -1,10 +1,10 @@
 #!/bin/bash
 
 BUILD_DATE=`date`;
-BUILD_NUM=1;
+BUILD_NUM=2;
 BUILD_VER_MAX=1;
-BUILD_VER_MIN=2;
-BUILD_VER_FIX=0;
+BUILD_VER_MIN=3;
+BUILD_VER_FIX=3;
 BUILD_VER="${BUILD_VER_MAX}.${BUILD_VER_MIN}.${BUILD_VER_FIX}";
 
 cat appinfo.json | sed s/BUILD_VER/${BUILD_VER}/ > $1/appinfo.json

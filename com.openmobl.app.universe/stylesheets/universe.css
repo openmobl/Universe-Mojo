@@ -794,6 +794,14 @@ body.palm .scene-fade-bottom-dark
     margin: 5px 10px 5px 10px;
 }
 
+.palm-page-header .icon.preferences
+{
+    background-image: url(../images/header-icon-prefs.png);
+	width: 48px;
+	height: 48px;
+	left: 4px;
+}
+
 /* Address Bar */
 div#title-text
 {
