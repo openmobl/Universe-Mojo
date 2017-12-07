@@ -21,7 +21,7 @@ fi;
 
 echo "**** Staging Universe"
 
-cp -R com.openmobl.app.universe/ ${STAGING}
+cp -R com.openmobl.app.universe/* ${STAGING}
 
 echo "**** Staging Metrix"
 

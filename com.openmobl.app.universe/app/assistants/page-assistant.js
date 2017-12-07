@@ -67,6 +67,7 @@ PageAssistant.errorCodes = {
     CURLE_COULDNT_CONNECT: 2007,
     CURLE_REMOTE_ACCESS_DENIED: 2009,
     CURLE_HTTP_RETURNED_ERROR: 2022,
+    CURLE_WRITE_ERROR: 2023,
     CURLE_OPERATION_TIMEDOUT: 2028,
     CURLE_SSL_CONNECT_ERROR: 2035,
     CURLE_FILE_COULDNT_READ_FILE: 2037,
@@ -1177,15 +1178,15 @@ PageAssistant.prototype.documentLoadError = function(event) // domain, errorCode
     if (loadURL !== undefined) {
         this.openURLError(loadURL);
         return;
-    }
-    
-    this.controller.showDialog({
+    } else if (event.errorCode != PageAssistant.errorCodes.CURLE_WRITE_ERROR) {    
+        this.controller.showDialog({
             template: "page/page-error-dialog",
             assistant: new PageErrorAssistant(this),
             message: event.message,
             code: event.errorCode,
             url: event.failingURL
         });
+    }
 };
 PageAssistant.prototype.pluginSpotlightStart = function()
 {
