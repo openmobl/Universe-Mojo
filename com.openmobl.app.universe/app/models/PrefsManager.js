@@ -96,6 +96,13 @@ PrefsManager.prototype.get = function(key)
     return value;*/
 };
 
+PrefsManager.prototype.getAll = function()
+{
+    Mojo.Log.info("PrefsManager#getAll( )");
+    
+    return this.cache;
+};
+
 PrefsManager.prototype.hasStarted = function()
 {
     Mojo.Log.info("The preference DB is started? " + this.started);

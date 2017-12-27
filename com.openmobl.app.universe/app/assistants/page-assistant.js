@@ -40,12 +40,10 @@ PageAssistant.ContextMenu = {
     CopyLink: {label: $L("Copy Link"), command: "do-ctxCopy"},
     TweetThis: {label: $L("Tweet this"), command: "do-ctxTweet"},
     DialWithPhone: {label: $L("Phone"), command: "do-ctxDialPhone"},
-    DialWithVoogle: {label: $L("Voogle"), command: "do-ctxDialVoogle"},
     DialWith: {
         label: $L("Dial with..."),
         items: [
-            {label: $L("Phone"), command: "do-ctxDialPhone"},
-            {label: $L("Voogle"), command: "do-ctxDialVoogle"}
+            {label: $L("Phone"), command: "do-ctxDialPhone"}
         ]
     },
     TextNumber: {label: $L("Text"), command: "do-ctxTextNum"},
@@ -171,6 +169,8 @@ function PageAssistant(params)
     this.downloadFileHandler        = this.downloadFile.bind(true);
     this.pluginSpotlightStartHandler= this.pluginSpotlightStart.bind(this);
     this.pluginSpotlightEndHandler  = this.pluginSpotlightEnd.bind(this);
+    this.browserServerConnectedHandler = this.browserServerConnected.bind(this);
+    this.browserServerDisconnectedHandler = this.browserServerDisconnected.bind(this);
     
     /* Setup callbacks for the Addressbar */
     this.openURLHandler             = this.openURL.bind(this);
@@ -208,6 +208,12 @@ PageAssistant.prototype.setup = function()
 	/* Widget creation */
     this.setupMenus();    
     this.setupWebView();
+    
+    this.controller.setupWidget('server-disconnected-spinner', {spinnerSize: Mojo.Widget.spinnerLarge});
+    this.disconnectedScrim = this.controller.get('server-disconnected');
+    this.disconnectedScrim.hide();
+    this.disconnectedSpinner = this.controller.get('server-disconnected-spinner');
+    
 	
 	/* Event Handlers */
     //this.controller.listen(this.controller.sceneElement, Mojo.Event.tap, this.onSingleTapHandler, false);
@@ -238,12 +244,12 @@ PageAssistant.prototype.setup = function()
     this.webView.addEventListener(Mojo.Event.webViewUpdateHistory, this.updateHistoryHandler, false);
     this.webView.addEventListener(Mojo.Event.webViewPluginSpotlightStart, this.pluginSpotlightStartHandler, false);
     this.webView.addEventListener(Mojo.Event.webViewPluginSpotlightEnd, this.pluginSpotlightEndHandler, false);
+    this.webView.addEventListener(Mojo.Event.webViewServerConnect, this.browserServerConnectedHandler, false);
+    this.webView.addEventListener(Mojo.Event.webViewServerDisconnect, this.browserServerDisconnectedHandler, false);
     this.webView.addEventListener(Mojo.Event.webViewMimeHandoff, this.downloadFileHandler, false);
     this.webView.addEventListener("singletap", this.onSingleTapHandler, true);
     /*
     this.webView.addEventListener(Mojo.Event.webViewScrollAndScaleChanged, 
-    this.webView.addEventListener(Mojo.Event.webViewServerConnect,
-    this.webView.addEventListener(Mojo.Event.webViewServerDisconnect,
     */
     
     this.setupPageBackground();
@@ -290,13 +296,17 @@ PageAssistant.prototype.setupWebView = function()
 
 PageAssistant.prototype.setupRedirects = function()
 {
-    /* The call to Mojo.loadJSONFile in webView widget is broken, manually update this... File a bug @ Palm */
-    // TODO: Update the Maps URL
-    this.webView.mojo.addUrlRedirect("^http://((www\\.)?google\\.(com|[a-z]{2}|com?\\.[a-z]{2})/maps(/m)?|maps\\.google\\.(com|[a-z]{2}|com?\\.[a-z]{2})(/maps(/m)?)?)(/)?(\\?.*)?$", true, "com.palm.app.maps", 0);
-    this.webView.mojo.addUrlRedirect("^[^:]+://www.youtube.com/watch\\?v=", true, "com.palm.app.youtube", 0);
-    //this.webView.mojo.addUrlRedirect("^[^:]+://m.youtube.com/watch", true, "com.palm.app.youtube", 0);
-    this.webView.mojo.addUrlRedirect("^http://developer.palm.com/appredirect/?", true, "com.palm.app.findapps", 0);
-    this.webView.mojo.addUrlRedirect("^about:", true, "com.openmobl.app.universe", 0);
+    try {
+        /* The call to Mojo.loadJSONFile in webView widget is broken, manually update this... File a bug @ Palm */
+        // TODO: Update the Maps URL
+        this.webView.mojo.addUrlRedirect("^http://((www\\.)?google\\.(com|[a-z]{2}|com?\\.[a-z]{2})/maps(/m)?|maps\\.google\\.(com|[a-z]{2}|com?\\.[a-z]{2})(/maps(/m)?)?)(/)?(\\?.*)?$", true, "com.palm.app.maps", 0);
+        this.webView.mojo.addUrlRedirect("^[^:]+://www.youtube.com/watch\\?v=", true, "com.palm.app.youtube", 0);
+        //this.webView.mojo.addUrlRedirect("^[^:]+://m.youtube.com/watch", true, "com.palm.app.youtube", 0);
+        this.webView.mojo.addUrlRedirect("^http://developer.palm.com/appredirect/?", true, "com.palm.app.findapps", 0);
+        this.webView.mojo.addUrlRedirect("^about:", true, "com.openmobl.app.universe", 0);
+    } catch (e) {
+        Mojo.Log.error("PageAssistant#setupRedirects - e: ", e);
+    }
 };
 
 PageAssistant.prototype.finalActivate = function(results)
@@ -328,9 +338,13 @@ PageAssistant.prototype.finalActivate = function(results)
         }
     }
 
-    this.webView.mojo.setBlockPopups(Utils.toBool(results["blockPopUps"]));
-    this.webView.mojo.setAcceptCookies(Utils.toBool(results["acceptCookies"]));
-    this.webView.mojo.setEnableJavaScript(Utils.toBool(results["enableJS"]));
+    try {
+        this.webView.mojo.setBlockPopups(Utils.toBool(results["blockPopUps"]));
+        this.webView.mojo.setAcceptCookies(Utils.toBool(results["acceptCookies"]));
+        this.webView.mojo.setEnableJavaScript(Utils.toBool(results["enableJS"]));
+    } catch (e) {
+        Mojo.Log.error("PageAssistant#finalActivate - e: ", e);
+    }
     
     this.setupRedirects();
     
@@ -366,7 +380,7 @@ PageAssistant.prototype.finalActivate = function(results)
         this.search = undefined;
     }
     
-    this.firstOpen = false;
+    //this.firstOpen = false;
     
     Universe.metrix.checkBulletinBoard(this.controller);
 
@@ -389,53 +403,7 @@ PageAssistant.prototype.activate = function(event)
     if (Universe.getPrefsManager().hasStarted()) {
         Mojo.Log.info("Preference database has loaded");
         
-        if (!Utils.toBool(Universe.getPrefsManager().get("hideIconsWhileBrowsing"))) {
-            this.menuAssistant.finishSceneLoad();
-        }
-        
-        this.updateChrome();
-    
-        if (Utils.toBool(Universe.getPrefsManager().get("hideIconsWhileBrowsing"))) {
-            this.addressBar.setShouldHide(true);
-        }
-        
-        if (this.firstOpen) {
-            if (this.webViewAttr.pageIdentifier === undefined &&
-                this.search === undefined &&
-                this.loadingURL === undefined) {
-                switch (Universe.getPrefsManager().get("openOnStart")) {
-                    case "homepage":
-                        this.loadingURL = Universe.getPrefsManager().get("homePage");
-                        break;
-                    case "blank":
-                        this.loadingURL = "about:blank";
-                        break;
-                }
-            }
-        }
-
-        this.webView.mojo.setBlockPopups(Utils.toBool(Universe.getPrefsManager().get("blockPopUps")));
-        this.webView.mojo.setAcceptCookies(Utils.toBool(Universe.getPrefsManager().get("acceptCookies")));
-        this.webView.mojo.setEnableJavaScript(Utils.toBool(Universe.getPrefsManager().get("enableJS")));
-        
-        this.setupRedirects();
-        
-        Universe.getPrefsManager().addWatcher(this.tabID, this.handlePrefsChanged.bind(this));
-        
-        if (this.controller.stageController.setWindowOrientation && Utils.toBool(Universe.getPrefsManager().get("autoRotate"))) {
-            this.controller.stageController.setWindowOrientation("free");
-        }
-        
-        this.privateBrowsing = Utils.toBool(Universe.getPrefsManager().get("privateBrowsing"));
-        this.addressBar.showPrivateBrowsing(this.privateBrowsing);
-        
-        if (Utils.toBool(Universe.getPrefsManager().get("enableMetrix"))) {
-            Universe.identify();
-        } else if (!Utils.toBool(Universe.getPrefsManager().get("enableMetrixPrompted"))) {
-            Universe.identifyPrompt(this.controller);
-        }
-        
-        Universe.metrix.checkBulletinBoard(this.controller);
+        this.finalActivate(Universe.getPrefsManager().getAll());
     } else {
         Mojo.Log.info("Preference database has not loaded");
         
@@ -456,7 +424,7 @@ PageAssistant.prototype.activate = function(event)
     }
     
     if (event || (this.firstOpen && Universe.getPrefsManager().hasStarted())) {
-        Mojo.Log.error("Loading a url -- event:", event, ", firstOpen:", this.firstOpen); // SENTINAL FOR ALPHA DEBUGGING
+        Mojo.Log.error("Loading a url -- event:", event, ", firstOpen:", this.firstOpen);
         
         this.addressBar.show(true);
         if (this.loadingURL !== undefined) {
@@ -518,12 +486,12 @@ PageAssistant.prototype.cleanup = function(event)
     this.webView.removeEventListener(Mojo.Event.webViewUpdateHistory, this.updateHistoryHandler, false);
     this.webView.removeEventListener(Mojo.Event.webViewPluginSpotlightStart, this.pluginSpotlightStartHandler, false);
     this.webView.removeEventListener(Mojo.Event.webViewPluginSpotlightEnd, this.pluginSpotlightEndHandler, false);
+    this.webView.removeEventListener(Mojo.Event.webViewServerConnect, this.browserServerConnectedHandler, false);
+    this.webView.removeEventListener(Mojo.Event.webViewServerDisconnect, this.browserServerDisconnectedHandler, false);
     this.webView.removeEventListener(Mojo.Event.webViewMimeHandoff, this.downloadFileHandler, false);
     this.webView.removeEventListener("singletap", this.onSingleTapHandler, true);
     /*
     this.webView.removeEventListener(Mojo.Event.webViewScrollAndScaleChanged,
-    this.webView.removeEventListener(Mojo.Event.webViewServerConnect, 
-    this.webView.removeEventListener(Mojo.Event.webViewServerDisconnect,
     */
     this.controller.stopListening("web-page", Mojo.Event.hold, this.holdEventHandler, false);
     this.controller.stopListening(this.controller.getSceneScroller(), Mojo.Event.scrollStarting, this.scrollStartEventHandler, false);
@@ -549,9 +517,13 @@ PageAssistant.prototype.handlePrefsChanged = function(prefs)
     
     this.updateChrome();
     
-    this.webView.mojo.setBlockPopups(Utils.toBool(prefs["blockPopUps"]));
-    this.webView.mojo.setAcceptCookies(Utils.toBool(prefs["acceptCookies"]));
-    this.webView.mojo.setEnableJavaScript(Utils.toBool(prefs["enableJS"]));
+    try {
+        this.webView.mojo.setBlockPopups(Utils.toBool(prefs["blockPopUps"]));
+        this.webView.mojo.setAcceptCookies(Utils.toBool(prefs["acceptCookies"]));
+        this.webView.mojo.setEnableJavaScript(Utils.toBool(prefs["enableJS"]));
+    } catch (e) {
+        Mojo.Log.error("PageAssistant#handlePrefsChanged - e: ", e);
+    }
     
     if (this.controller.stageController.setWindowOrientation) {
         if (Utils.toBool(prefs["autoRotate"])) {
@@ -645,7 +617,15 @@ PageAssistant.prototype.openURLCommon = function(url)
     }
     this.addressBar.changeMode("title");
     
-    this.webView.mojo.openURL(this.loadingURL);
+    try {
+        this.webView.mojo.openURL(this.loadingURL);
+    } catch (e) {
+        Mojo.Log.error("PageAssistant#openURLCommon - e: ", e);
+        
+        if (e.toString().indexOf("Disconnected") != -1) {
+            this.url = url;
+        }
+    }
 };
 
 PageAssistant.prototype.canGoBack = function()
@@ -695,8 +675,11 @@ PageAssistant.prototype.showProgress = function(progress)
 {
     var newProgress = progress;
     
-    if (newProgress === undefined)
+    if (newProgress === undefined || newProgress === null) {
+        this.progressBar.className = "progress-overlay";
+        this.progressBar.style.display = "block";
         return;
+    }
     
     Mojo.Log.info("PageAssistant#showProgress(", newProgress, ")");
     
@@ -1207,6 +1190,29 @@ PageAssistant.prototype.pluginSpotlightEnd = function()
     }
 };
 
+PageAssistant.prototype.browserServerConnected = function(event)
+{
+    if (this.disconnectedSpinner && this.disconnectedSpinner.mojo) {
+        this.disconnectedSpinner.mojo.stop();
+    }
+    this.disconnectedScrim.hide();
+    
+    this.openURL(this.url);
+};
+
+PageAssistant.prototype.browserServerDisconnected = function(event)
+{
+    if (this.disconnectedSpinner && this.disconnectedSpinner.mojo) {
+        this.disconnectedSpinner.mojo.start();
+    }
+    this.disconnectedScrim.show();
+
+    this.addressBar.changeMode("title", "reload");
+    this.showProgress();
+    this.showChromeIfNeeded(true);
+    this.isEditing = false; 
+};
+
 PageAssistant.prototype.keyDown = function(event)
 {
     var c = String.fromCharCode(event.originalEvent.keyCode);
@@ -1671,9 +1677,10 @@ PageAssistant.prototype.handleCommand = function(event)
                     
                     choiceList.push({ label: $L("SMS"), value: "sms" });
                     choiceList.push({ label: $L("Email"), value: "email" });
-                    if (Mojo.Environment.DeviceInfo.platformVersionMajor >= 2) {
-                        choiceList.push({ label: $L("Air2Share"), value: "broadcast" });
-                    }
+                    // TODO: Re-enable network sharing
+                    /*if (Mojo.Environment.DeviceInfo.platformVersionMajor >= 2) {
+                        choiceList.push({ label: $L("Network"), value: "broadcast" });
+                    }*/
                     choiceList.push({ label: $L("Cancel"), type: "dismiss", value: "cancel" });
                     
                     this.controller.showAlertDialog({
