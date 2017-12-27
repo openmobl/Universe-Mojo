@@ -46,7 +46,8 @@
     position: absolute;
     left: 0px;
     top: 0px;
-    background: url(../../../icon-small.png) 0 0 no-repeat;
+    /*background: url(../../../largeicon.png) 0 0 no-repeat;*/
+    padding: 4px 4px 4px 4px;
     width: 48px;
     height: 48px;
 }
