@@ -1038,9 +1038,6 @@ PageAssistant.prototype.holdEvent = function(event)
                             case PageAssistant.ContextMenu.DialWithPhone.command:
                                 this.dialWithPhone(linkInfo.url);
                                 break;
-                            case PageAssistant.ContextMenu.DialWithVoogle.command:
-                                this.dialWithVoogle(linkInfo.url);
-                                break;
                             case PageAssistant.ContextMenu.TextNumber.command:
                                 break;
                             case PageAssistant.ContextMenu.AddToContacts.command:
